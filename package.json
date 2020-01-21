@@ -4,7 +4,8 @@
   "description": "UK based application for Nursing Homes and Medical Professionals",
   "main": "index.js",
   "scripts": {
-    "test": "npm run start"
+    "start": "nodemon --exec babel-node index.js",
+    "test": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,14 @@
   "bugs": {
     "url": "https://github.com/SalmanHaider5/nightangle/issues"
   },
-  "homepage": "https://github.com/SalmanHaider5/nightangle#readme"
+  "homepage": "https://github.com/SalmanHaider5/nightangle#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mysql2": "^2.1.0",
+    "sequelize": "^5.21.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
 }
