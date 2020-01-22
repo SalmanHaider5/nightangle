@@ -18,9 +18,13 @@
   },
   "homepage": "https://github.com/SalmanHaider5/nightangle#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.24.0",
     "mysql2": "^2.1.0",
+    "nodemailer": "^6.4.2",
     "sequelize": "^5.21.3"
   },
   "devDependencies": {

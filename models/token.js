@@ -1,6 +1,8 @@
+const { tables: { token } } = require('../constants')
+
 module.exports  = (sequelize, types) => {
     const { INTEGER, STRING } = types
-    return sequelize.define('professional', {
+    return sequelize.define(token, {
         id: {
             type: INTEGER,
             autoIncrement: true,
@@ -10,7 +12,7 @@ module.exports  = (sequelize, types) => {
             type: STRING,
             unique: true
         },
-        password: {
+        token: {
             type: STRING
         }
     })

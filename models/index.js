@@ -9,7 +9,7 @@ const sequelize = new Sequelize(DB, USER, PASSWORD, {
 const models = {}
 models.sequelize = sequelize
 
-models.company = require('./company')(sequelize, DataTypes)
-models.professional = require('./professional')(sequelize, DataTypes)
+models.User    = require('./user')(sequelize, DataTypes)
+models.Token   = require('./token')(sequelize, DataTypes)
 
 module.exports = models

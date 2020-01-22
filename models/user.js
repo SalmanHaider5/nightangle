@@ -1,6 +1,8 @@
+const { tables: { user } } = require('../constants')
+
 module.exports  = (sequelize, types) => {
-    const { INTEGER, STRING } = types
-    return sequelize.define('company', {
+    const { INTEGER, STRING, BOOLEAN } = types
+    return sequelize.define(user, {
         id: {
             type: INTEGER,
             autoIncrement: true,
@@ -12,6 +14,12 @@ module.exports  = (sequelize, types) => {
         },
         password: {
             type: STRING
+        },
+        role: {
+            type: STRING,
+        },
+        isVerified: {
+            type: BOOLEAN
         }
     })
 }
