@@ -1,9 +1,10 @@
 
 module.exports = {
 
-    hostUrl: 'http://localhost:3000',
+    hostUrl: 'http://localhost:1000',
     signupSecret: 'nightingale',
     tokenExpiration: 1200, // In Seconds
+    linkExpiration: 20, // In minutes
 
     responseMessages: {
         alreadyRegistered: 'Email is already registered. Please login into your account',
@@ -25,9 +26,9 @@ module.exports = {
     },
 
     codes: {
-        error: 'Error',
-        success: 'Success',
-        info: 'Information'
+        error: 'error',
+        success: 'success',
+        info: 'info'
     },
 
     tables: {

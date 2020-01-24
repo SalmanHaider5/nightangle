@@ -8,6 +8,7 @@ const {
     hostUrl,
     signupSecret,
     tokenExpiration,
+    linkExpiration,
     responseMessages: {
         alreadyRegistered,
         emailSent,
@@ -54,18 +55,18 @@ exports.signup = (req, res) => {
                     const verificationUrl = `${hostUrl}/${id}/verify/${authToken}`
                     const verificationEmailContent = `${emailVerificationMessage} <a href='${verificationUrl}' target='_blank'>Verify Me</a>`
                     SendEmail(email, emailVerificationSubject, verificationEmailContent)
-                    res.json({code: success, response: emailSent})
+                    res.json({code: success, response: { title: 'Account Created', message: emailSent } })
                 })
                 .catch(err => {
-                    res.json({code: error, response: generalErrorMessage, error: err})
+                    res.json({code: error, response: { title: 'Error', message: generalErrorMessage }, error: err})
                 })
             })
             .catch(err => {
-                res.json({ code: error, response: generalErrorMessage, error: err })
+                res.json({ code: error, response: { title: 'Error', message: generalErrorMessage }, error: err })
             })
         }else{
             if(user.dataValues.isVerified){
-                res.json({ code: info, response: alreadyRegistered })
+                res.json({ code: info, response: { title: 'Information', message: alreadyRegistered } })
             }else{
                 Token.destroy({ where: { email: user.dataValues.email } })
                 const { id, email } = user.dataValues
@@ -75,12 +76,12 @@ exports.signup = (req, res) => {
                     token: authToken
                 }
                 Token.create(tokenData)
-                res.json({ code: success, response: emailSent  })
+                res.json({ code: success, response: { title: 'Account Created', message: emailSent }  })
             }
         }
     })
     .catch(err => {
-        res.json({code: error, response: generalErrorMessage, error: err})
+        res.json({code: error, response: { title: 'Error', message: generalErrorMessage }, error: err})
     })      
 }
 
@@ -103,7 +104,7 @@ exports.verify = (req, res) => {
                         const tokenTime = moment(userToken.updatedAt)
                         const currentTime = new moment()
                         const minutes = currentTime.diff(tokenTime, 'minutes')
-                        if(minutes > 20){
+                        if(minutes > linkExpiration){
                             res.json({ code: error, response: linkExpired })
                         }else{
                             const verifiedUser = {}
