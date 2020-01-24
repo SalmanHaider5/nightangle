@@ -5,6 +5,8 @@ const models               = require('./models')
 const PORT                 = process.env.PORT || 3000
 
 const { signup, verify }   = require('./controllers/account')
+const { create }           = require('./controllers/professional')
+const { add, getPaymentClientToken }           = require('./controllers/company')
 
 app.use(json())
 app.use(urlencoded({ extended: true }))
@@ -13,6 +15,9 @@ models.sequelize.sync();
 
 app.post('/signup', signup)
 app.get('/:userId/verify/:token', verify)
+app.post('/:userId/professional', create)
+app.post('/:userId/company', add)
+app.get('/company/clientToken/:userId', getPaymentClientToken)
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)
