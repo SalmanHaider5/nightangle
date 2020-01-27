@@ -1,4 +1,4 @@
-const { Company }        = require('../models')
+const { Company, User }        = require('../models')
 const gateway        = require('../config/braintree')
 
 const {
@@ -27,17 +27,16 @@ exports.add = (req, res) => {
 
 exports.getPaymentClientToken = (req, res) => {
     const { params: { userId } } = req
-    Company.findOne({ where: { userId } })
-    .then(company => {
-        if(company === null){
+    User.findOne({ where: { id: userId, isVerified: true, role: 'company' } })
+    .then(user => {
+        if(user === null){
             res.json({ code: error, response: generalErrorMessage })
         }
         else{
-            const { dataValues: { firstName, lastName } } = company
+            const { dataValues: { email } } = user
             gateway.customer.create({
                 id: userId,
-                firstName: firstName,
-                lastName: lastName
+                email: email
             }, (err, response) => {
                 if(err){
                     res.json({ code: error, response: generalErrorMessage, error: err })
