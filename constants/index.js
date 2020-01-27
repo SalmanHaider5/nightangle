@@ -2,9 +2,11 @@
 module.exports = {
 
     hostUrl: 'http://localhost:1000',
+    appUrl: 'http://localhost:3000',
     signupSecret: 'nightingale',
     tokenExpiration: 1200, // In Seconds
     linkExpiration: 20, // In minutes
+    codeExpiration: 10, // In minutes
 
     responseMessages: {
         alreadyRegistered: 'Email is already registered. Please login into your account',
@@ -14,7 +16,12 @@ module.exports = {
         alreadyVerified: 'Your account is already verified. Please login into your account',
         linkBroken: 'Activation link is broken. Please try again to verify or register again ',
         accountVerified: 'Your account has been verified please update your profile',
-        recordAdded: 'Record successfully added'
+        recordAdded: 'Record successfully added',
+        phoneAdded: 'Verification code has been sent to your phone. Code is valid for only 10 minutes',
+        codeExpired: 'Code has been expired, please enter again and verify your phone',
+        phoneVerified: 'Your account has been verified please update your profile',
+        phoneAlreadyVerified: 'This phone has already been associated with different account',
+        falseCode: 'Make sure you are typing right code as sent to you'
     },
 
     emailCredentials: {
@@ -35,7 +42,8 @@ module.exports = {
         token: 'token',
         user: 'user',
         professional: 'professional',
-        company: 'company'
+        company: 'company',
+        phone: 'phone'
     },
 
     braintreeCredentials: {

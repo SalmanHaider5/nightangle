@@ -6,7 +6,7 @@ const cors                 = require('cors')
 const PORT                 = process.env.PORT || 1000
 
 const { signup, verify }   = require('./controllers/account')
-const { create }           = require('./controllers/professional')
+const { create, addPhone, verifyPhone }           = require('./controllers/professional')
 const { add, getPaymentClientToken }           = require('./controllers/company')
 
 app.use(json())
@@ -18,6 +18,8 @@ models.sequelize.sync();
 app.post('/signup', signup)
 app.get('/:userId/verify/:token', verify)
 app.post('/:userId/professional', create)
+app.post('/:userId/addPhone', addPhone)
+app.post('/:userId/verifyPhone', verifyPhone)
 app.post('/:userId/company', add)
 app.get('/company/clientToken/:userId', getPaymentClientToken)
 

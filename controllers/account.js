@@ -5,7 +5,7 @@ const { User, Token }        = require('../models')
 const SendEmail              = require('../config/email')
 
 const {
-    hostUrl,
+    appUrl,
     signupSecret,
     tokenExpiration,
     linkExpiration,
@@ -52,7 +52,7 @@ exports.signup = (req, res) => {
                 }
                 Token.create(tokenData)
                 .then(() => {
-                    const verificationUrl = `${hostUrl}/${id}/verify/${authToken}`
+                    const verificationUrl = `${appUrl}/${id}/verify/${authToken}`
                     const verificationEmailContent = `${emailVerificationMessage} <a href='${verificationUrl}' target='_blank'>Verify Me</a>`
                     SendEmail(email, emailVerificationSubject, verificationEmailContent)
                     res.json({code: success, response: { title: 'Account Created', message: emailSent } })
@@ -90,43 +90,43 @@ exports.verify = (req, res) => {
     User.findOne({ where: { id: userId } })
     .then(user => {
         if(user === null){
-            res.json({ code: error, response: linkExpired })
+            res.json({ code: error, response: { title: 'User not Found', message: generalErrorMessage } })
         }else{
             const { dataValues: { isVerified, email } } = user
             if(isVerified){
-                res.json({ code: info, response: alreadyVerified })
+                res.json({ code: info, response: { title: 'Already Verified', message: alreadyVerified } })
             }else{
                 Token.findOne({ where: { email } })
                 .then(userToken => {
                     if(token !== userToken.token){
-                        res.json({ code: info, response: linkBroken })
+                        res.json({ code: error, response: { title: 'Link Broken', message: linkBroken } })
                     }else{
                         const tokenTime = moment(userToken.updatedAt)
                         const currentTime = new moment()
                         const minutes = currentTime.diff(tokenTime, 'minutes')
                         if(minutes > linkExpiration){
-                            res.json({ code: error, response: linkExpired })
+                            res.json({ code: error, response: { title: 'Link Expired', message: linkExpired } })
                         }else{
                             const verifiedUser = {}
                             verifiedUser.isVerified = true
                             User.update(verifiedUser, { where: { id: userId } })
                             .then(() => {
                                 Token.destroy({ where: { email } })
-                                res.json({ code: success, response: accountVerified, token })
+                                res.json({ code: success, response: { title: 'Account Verified', message: accountVerified }, token, role: user.role })
                             })
                             .catch(err => {
-                                res.json({code: error, response: generalErrorMessage, error: err})
+                                res.json({code: error, response: { title: 'Error', message: generalErrorMessage }, error: err})
                             })
                         }
                     }
                 })
                 .catch(err => {
-                    res.json({code: error, response: generalErrorMessage, error: err})
+                    res.json({code: error, response: { title: 'Error', message: generalErrorMessage }, error: err})
                 })
             }
         }
     })
     .catch(err => {
-        res.json({code: error, response: generalErrorMessage, error: err})
+        res.json({code: error, response: { title: 'Error', message: generalErrorMessage }, error: err})
     })
 }
