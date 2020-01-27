@@ -1,6 +1,7 @@
-const moment                              = require('moment')
-const randomize                           = require('randomatic')
-const { Professional, User, Phone }       = require('../models')
+const moment                         = require('moment')
+const randomize                      = require('randomatic')
+const { Professional, User, Phone }  = require('../models')
+const SendMessage                    = require('../config/message')
 
 const {
     codeExpiration,
@@ -44,11 +45,14 @@ exports.addPhone = (req, res) => {
                 Phone.findOne({ where: { phone } })
                 .then(model => {
                     if(model === null){
+                        const code = randomize('0', 6)
                         const contact = {}
                         contact.phone = phone,
-                        contact.code = randomize('0', 6)
+                        contact.code = code
                         contact.status = false
                         contact.userId = userId
+                        const message = `Your verification code is ${code}`
+                        SendMessage(phone, message)
                         Phone.create(contact)
                         .then(() => {
                             res.json({ code: success, response: { title: 'Phone Added',  message: phoneAdded } })
