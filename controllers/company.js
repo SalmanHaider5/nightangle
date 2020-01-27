@@ -18,17 +18,19 @@ exports.add = (req, res) => {
     company.userId = userId
     Company.create(company)
     .then(() => {
-        res.json({ code: success, response: recordAdded })
+        res.json({ code: success, response: { title: 'Record Added', message: recordAdded } })
     })
     .catch(err => {
-        res.json({ code: error, response: generalErrorMessage, error: err })
+        res.json({ code: error, response: { title: 'Error', message: generalErrorMessage }, error: err })
     })
 }
 
 exports.getPaymentClientToken = (req, res) => {
     const { params: { userId } } = req
+    console.log(userId)
     User.findOne({ where: { id: userId, isVerified: true, role: 'company' } })
     .then(user => {
+        console.log(user)
         if(user === null){
             res.json({ code: error, response: generalErrorMessage })
         }

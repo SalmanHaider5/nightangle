@@ -25,7 +25,7 @@ exports.create = (req, res) => {
     professional.userId = userId
     Professional.create(professional)
     .then(() => {
-        res.json({ code: success, response:{ title: 'Account Created', message: recordAdded } })
+        res.json({ code: success, response:{ title: 'Record Added', message: recordAdded } })
     })
     .catch(err => {
         res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
@@ -37,7 +37,7 @@ exports.addPhone = (req, res) => {
     User.findOne({ where: { id: userId } })
     .then(user => {
         if(user === null){
-            res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage } })
+            res.json({ code: error, response:{ title: 'Not Found', message: generalErrorMessage } })
         }else{
             const { dataValues: { isVerified } } = user
             if(isVerified){
