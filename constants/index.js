@@ -2,7 +2,7 @@
 module.exports = {
 
     hostUrl: 'http://localhost:1000',
-    appUrl: 'http://localhost:3005',
+    appUrl: 'http://localhost:3000',
     signupSecret: 'nightingale',
     tokenExpiration: 1200, // In Seconds
     linkExpiration: 20, // In minutes
@@ -31,8 +31,8 @@ module.exports = {
 
     emailCredentials: {
         service: 'gmail',
-        email: 'salman.hayder112@gmail.com',
-        password: 'inspiron@I5',
+        email: 'xxxxxxxxxxxxxxxxxxxxxxx@gmail.com',
+        password: 'xxxxxxxxx',
         emailVerificationSubject: 'Verify your Account',
         emailVerificationMessage: '<p>To verify your account please click on'
     },
