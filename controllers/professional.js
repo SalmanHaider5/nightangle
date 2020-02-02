@@ -60,7 +60,7 @@ exports.addPhone = (req, res) => {
                                 contact.status = false
                                 contact.userId = userId
                                 const message = `Your verification code is ${code}`
-                                // SendMessage(phone, message)
+                                SendMessage(phone, message)
                                 Phone.create(contact)
                                 .then(() => {
                                     res.json({ code: success, response: { title: 'Phone Added',  message: phoneAdded } })
@@ -83,7 +83,7 @@ exports.addPhone = (req, res) => {
                             const code = randomize('0', 6)
                             contact.code = code
                             const message = `Your verification code is ${code}`
-                            // SendMessage(phone, message)
+                            SendMessage(phone, message)
                             Phone.update(contact, { where: { id: data.id } })
                             .then(() => {
                                 res.json({ code: success, response: { title: 'Phone Added',  message: phoneAdded } })
