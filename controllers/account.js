@@ -76,6 +76,9 @@ exports.signup = (req, res) => {
                     token: authToken
                 }
                 Token.create(tokenData)
+                const verificationUrl = `${appUrl}/${id}/verify/${authToken}`
+                const verificationEmailContent = `${emailVerificationMessage} <a href='${verificationUrl}' target='_blank'>Verify Me</a>`
+                SendEmail(email, emailVerificationSubject, verificationEmailContent)
                 res.json({ code: success, response: { title: 'Account Created', message: emailSent }  })
             }
         }

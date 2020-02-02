@@ -6,8 +6,8 @@ const cors                 = require('cors')
 const PORT                 = process.env.PORT || 1000
 
 const { signup, verify }   = require('./controllers/account')
-const { create, addPhone, verifyPhone }           = require('./controllers/professional')
-const { add, getPaymentClientToken }           = require('./controllers/company')
+const { create, addPhone, verifyPhone, getProfessionalDetails }           = require('./controllers/professional')
+const { add, getPaymentClientToken, getCompanyDetails }           = require('./controllers/company')
 
 app.use(json())
 app.use(cors())
@@ -21,6 +21,8 @@ app.post('/:userId/professional', create)
 app.post('/:userId/addPhone', addPhone)
 app.post('/:userId/verifyPhone', verifyPhone)
 app.post('/:userId/company', add)
+app.get('/:userId/company', getCompanyDetails)
+app.get('/:userId/professional', getProfessionalDetails)
 app.get('/company/clientToken/:userId', getPaymentClientToken)
 
 app.listen(1000, () => {

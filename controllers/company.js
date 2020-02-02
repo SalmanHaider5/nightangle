@@ -4,11 +4,15 @@ const gateway        = require('../config/braintree')
 const {
     codes:{
         error,
-        success
+        success,
+        info
     },
     responseMessages:{
         recordAdded,
-        generalErrorMessage
+        generalErrorMessage,
+        noRecord,
+        addRecord,
+        recordFound
     }
 } = require('../constants')
 
@@ -27,10 +31,8 @@ exports.add = (req, res) => {
 
 exports.getPaymentClientToken = (req, res) => {
     const { params: { userId } } = req
-    console.log(userId)
     User.findOne({ where: { id: userId, isVerified: true, role: 'company' } })
     .then(user => {
-        console.log(user)
         if(user === null){
             res.json({ code: error, response: generalErrorMessage })
         }
@@ -58,5 +60,24 @@ exports.getPaymentClientToken = (req, res) => {
     })
     .catch(error => {
         res.json({ code: error, response: generalErrorMessage, error })
+    })
+}
+
+exports.getCompanyDetails = (req, res) => {
+    const { params: { userId } } = req
+    User.findOne({ where: { id: userId, isVerified: true } })
+    .then(user => {
+        if(user === null){
+            res.json({ code: error, response: { title: 'Not Found', message: noRecord } })
+        }else{
+            Company.findOne({ where: { userId } })
+            .then(company => {
+                if(company === null){
+                    res.json({ code: info, response: { title: 'Profile Verified', message: addRecord } })   
+                }else{
+                    res.json({ code: success, response: { title: 'Record Found', message: recordFound }, company })
+                }
+            })
+        }
     })
 }

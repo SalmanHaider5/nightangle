@@ -31,7 +31,7 @@ module.exports  = (sequelize, types) => {
             type: STRING,
             allowNull: false
         },
-        country: {
+        county: {
             type: STRING
         },
         postalCode: {
@@ -56,6 +56,9 @@ module.exports  = (sequelize, types) => {
             type: BOOLEAN
         },
         subsidiaryName: {
+            type: STRING
+        },
+        subsidiaryAddress: {
             type: STRING
         },
         userId: {

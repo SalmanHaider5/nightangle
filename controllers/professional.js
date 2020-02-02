@@ -7,7 +7,8 @@ const {
     codeExpiration,
     codes:{
         error,
-        success
+        success,
+        info
     },
     responseMessages:{
         recordAdded,
@@ -15,8 +16,12 @@ const {
         phoneAdded,
         phoneVerified,
         phoneAlreadyVerified,
+        phoneAlreadyUsed,
         falseCode,
-        codeExpired
+        codeExpired,
+        recordFound,
+        phoneVerification,
+        addRecord
     }
 } = require('../constants')
 
@@ -42,39 +47,51 @@ exports.addPhone = (req, res) => {
         }else{
             const { dataValues: { isVerified } } = user
             if(isVerified){
-                Phone.findOne({ where: { phone } })
-                .then(model => {
-                    if(model === null){
-                        const code = randomize('0', 6)
-                        const contact = {}
-                        contact.phone = phone,
-                        contact.code = code
-                        contact.status = false
-                        contact.userId = userId
-                        const message = `Your verification code is ${code}`
-                        SendMessage(phone, message)
-                        Phone.create(contact)
-                        .then(() => {
-                            res.json({ code: success, response: { title: 'Phone Added',  message: phoneAdded } })
+                Phone.findOne({ where: { userId } })
+                .then(data => {
+                    if(data === null){
+                        Phone.findOne({ where: { phone } })
+                        .then(model => {
+                            if(model === null){
+                                const code = randomize('0', 6)
+                                const contact = {}
+                                contact.phone = phone,
+                                contact.code = code
+                                contact.status = false
+                                contact.userId = userId
+                                const message = `Your verification code is ${code}`
+                                // SendMessage(phone, message)
+                                Phone.create(contact)
+                                .then(() => {
+                                    res.json({ code: success, response: { title: 'Phone Added',  message: phoneAdded } })
+                                })
+                                .catch(err => {
+                                    res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
+                                })
+                            }else{
+                                res.json({ code: error, response: { title: 'Error', message: phoneAlreadyUsed } })
+                            }
                         })
-                        .catch(err => {
-                            res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
-                        })
-                    }else{
-                       const { status } = model
-                       if(status){
-                            res.json({ code: error, response: { title: 'Error', message: phoneAlreadyVerified } })
-                       }else{
-                            const contact = model.dataValues
-                            contact.code = randomize('0', 6)
-                            Phone.update(contact, { where: { id: model.id } })
+                    }
+                    else{
+                        const { status } = data
+                        if(status){
+                                res.json({ code: error, response: { title: 'Error', message: phoneAlreadyUsed } })
+                        }else{
+                            const contact = data.dataValues
+                            const phone = contact.phone
+                            const code = randomize('0', 6)
+                            contact.code = code
+                            const message = `Your verification code is ${code}`
+                            // SendMessage(phone, message)
+                            Phone.update(contact, { where: { id: data.id } })
                             .then(() => {
                                 res.json({ code: success, response: { title: 'Phone Added',  message: phoneAdded } })
                             })
                             .catch(err => {
                                 res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
                             })
-                       }
+                        }
                     }
                 })
             }else{
@@ -92,6 +109,7 @@ exports.verifyPhone = (req, res) => {
             res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
         }else{
             const { dataValues } = model
+            console.log('Matching...', code, dataValues.code)
             if(dataValues.code === code){
                 const codeTime = moment(model.updatedAt)
                 
@@ -121,5 +139,31 @@ exports.verifyPhone = (req, res) => {
     })
     .catch(err => {
         res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
+    })
+}
+
+exports.getProfessionalDetails = (req, res) => {
+    const { params: { userId } } = req
+    User.findOne({ where: { id: userId, isVerified: true } })
+    .then(user => {
+        if(user === null){
+            res.json({ code: error, response: { title: 'Not Found', message: noRecord } })
+        }else{
+            Professional.findOne({ where: { userId } })
+            .then(professional => {
+                if(professional === null){
+                    Phone.findOne({ where: { userId, status: true } })
+                    .then((phone) => {
+                        if(phone === null){
+                            res.json({ code: info, response: { title: 'Phone Verification', message: phoneVerification }, codeType: 1 })
+                        }else{
+                            res.json({ code: info, response: { title: 'Profile Verified', message: addRecord }, codeType: 2 })
+                        }
+                    })   
+                }else{
+                    res.json({ code: success, response: { title: 'Record Found', message: recordFound }, professional, codeType: 0 })
+                }
+            })
+        }
     })
 }

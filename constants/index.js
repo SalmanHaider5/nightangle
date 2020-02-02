@@ -20,8 +20,13 @@ module.exports = {
         phoneAdded: 'Verification code has been sent to your phone. Code is valid for only 10 minutes',
         codeExpired: 'Code has been expired, please enter again and verify your phone',
         phoneVerified: 'Your account has been verified please update your profile',
-        phoneAlreadyVerified: 'This phone has already been associated with different account',
-        falseCode: 'Make sure you are typing right code as sent to you'
+        phoneAlreadyUsed: 'This phone has already been associated with different account',
+        falseCode: 'Make sure you are typing right code as sent to you',
+        noRecord: 'No record found',
+        addRecord: 'Please update your profile',
+        recordFound: 'Record is already added',
+        phoneAlreadyVerified: 'User has already verified his phone',
+        phoneVerification: 'Please verify your phone'
     },
 
     emailCredentials: {
