@@ -1,8 +1,8 @@
-const { hashSync }           = require('bcryptjs')
-const { sign }               = require('jsonwebtoken')
-const moment                 = require('moment')
-const { User, Token }        = require('../models')
-const SendEmail              = require('../config/email')
+const { hashSync, compareSync } = require('bcryptjs')
+const { sign }                  = require('jsonwebtoken')
+const moment                    = require('moment')
+const { User, Token }           = require('../models')
+const SendEmail                 = require('../config/email')
 
 const {
     appUrl,
@@ -16,7 +16,10 @@ const {
         linkExpired,
         alreadyVerified,
         linkBroken,
-        accountVerified
+        accountVerified,
+        userNotFound,
+        userNotVerified,
+        invalidPassword
     },
     codes: {
         error,
@@ -126,6 +129,32 @@ exports.verify = (req, res) => {
                 .catch(err => {
                     res.json({code: error, response: { title: 'Error', message: generalErrorMessage }, error: err})
                 })
+            }
+        }
+    })
+    .catch(err => {
+        res.json({code: error, response: { title: 'Error', message: generalErrorMessage }, error: err})
+    })
+}
+
+exports.login = (req, res) => {
+    const { body: { email, password } } = req
+    User.findOne({ where: { email } })
+    .then(user =>{
+        if(user === null){
+            res.json({code: error, response: { title: 'Account not Found', message: userNotFound }, error: err})
+        }else{
+            const { dataValues: { isVerified } } = user
+            if(isVerified){
+                const isValid = compareSync(password, user.dataValues.password)
+                if(isValid){
+                    const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
+                    //Need to add code here
+                }else{
+                    res.json({code: error, response: { title: 'Invalid Password', message: invalidPassword }, error: err})
+                }
+            }else{
+                res.json({code: error, response: { title: 'Account not Verified', message: userNotVerified }, error: err})
             }
         }
     })

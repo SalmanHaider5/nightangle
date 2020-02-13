@@ -26,7 +26,10 @@ module.exports = {
         addRecord: 'Please update your profile',
         recordFound: 'Record is already added',
         phoneAlreadyVerified: 'User has already verified his phone',
-        phoneVerification: 'Please verify your phone'
+        phoneVerification: 'Please verify your phone',
+        userNotFound: 'Account with this email not found, please register yourself',
+        userNotVerified: 'Email is not verified, please verify your account to login',
+        invalidPassword: 'Password is not valid, please enter correct passowrd'
     },
 
     emailCredentials: {
