@@ -33,6 +33,10 @@ module.exports  = (sequelize, types) => {
             allowNull: false,
             default: false
         },
+        twoFactorAuthentication: {
+            type: BOOLEAN,
+            default: false
+        },
         idField:{
             type: STRING
         },

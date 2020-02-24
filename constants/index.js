@@ -29,13 +29,14 @@ module.exports = {
         phoneVerification: 'Please verify your phone',
         userNotFound: 'Account with this email not found, please register yourself',
         userNotVerified: 'Email is not verified, please verify your account to login',
-        invalidPassword: 'Password is not valid, please enter correct passowrd'
+        invalidPassword: 'Password is not valid, please enter correct passowrd',
+        loginSuccess: 'You have successfully logged into your account'
     },
 
     emailCredentials: {
         service: 'gmail',
-        email: 'xxxxxxxxxxxxxxxxxxxxxxx@gmail.com',
-        password: 'xxxxxxxxx',
+        email: 'salman.hayder112@gmail.com',
+        password: 'inspiron@I5',
         emailVerificationSubject: 'Verify your Account',
         emailVerificationMessage: '<p>To verify your account please click on'
     },
