@@ -36,7 +36,8 @@ module.exports = {
         passwordResetLinkExpired: 'Password reset link has been expired, please request again',
         passwordChangeSuccess: 'Your password has been successfully changed. Please log into your account',
         profileUpdated: 'Your profile has been successfully updated',
-        invalidCurrentPassword: 'Your current password is not valid. Please enter correct password'
+        invalidCurrentPassword: 'Your current password is not valid. Please enter correct password',
+        timesheetAdded: 'Timesheet has been successfully added.'
     },
 
     emailCredentials: {
@@ -60,7 +61,9 @@ module.exports = {
         user: 'user',
         professional: 'professional',
         company: 'company',
-        phone: 'phone'
+        phone: 'phone',
+        timesheet: 'timesheet',
+        singleTimesheet: 'singleTimesheet'
     },
 
     braintreeCredentials: {

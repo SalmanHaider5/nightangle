@@ -12,7 +12,9 @@ models.sequelize = sequelize
 models.User         = require('./user')(sequelize, DataTypes)
 models.Token        = require('./token')(sequelize, DataTypes)
 models.Company      = require('./company')(sequelize, DataTypes)
-models.Professional = require('./professional')(sequelize, DataTypes)
 models.Phone        = require('./phone')(sequelize, DataTypes)
+models.Professional = require('./professional')(sequelize, DataTypes)
+models.Timesheet       = require('./timesheet')(sequelize, DataTypes)
+models.SingleTimesheet = require('./singleTimesheet')(sequelize, DataTypes)
 
 module.exports = models

@@ -1,7 +1,7 @@
 const { hashSync, compareSync }      = require('bcryptjs')
 const moment                         = require('moment')
 const randomize                      = require('randomatic')
-const { Professional, User, Phone }  = require('../models')
+const { Professional, User, Phone, Timesheet, SingleTimesheet }  = require('../models')
 const SendMessage                    = require('../config/message')
 
 const {
@@ -24,7 +24,8 @@ const {
         phoneVerification,
         addRecord,
         profileUpdated,
-        invalidCurrentPassword
+        invalidCurrentPassword,
+        timesheetAdded
     }
 } = require('../constants')
 
@@ -358,5 +359,44 @@ exports.getProfessionalDetails = (req, res) => {
                 }
             })
         }
+    })
+}
+
+exports.addTimesheet = (req, res) => {
+    const { params: { userId }, body } = req
+    const { timesheet, singleTimesheet } = 
+    timesheet.userId = userId
+    Timesheet.create(timesheet)
+    .then(model => {
+        const { id } = model
+        singleTimesheet.timesheetId = id
+        SingleTimesheet.create(singleTimesheet)
+        .then(() => {
+            res.json({
+                code: success,
+                response: {
+                    title: 'Timesheet Added',
+                    message: timesheetAdded
+                }
+            })
+        })
+        .catch(err => {
+            res.json({
+                code: error,
+                response: {
+                    title: 'Error',
+                    message: generalErrorMessage
+                }
+            })
+        })
+    })
+    .catch(err => {
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            }
+        })
     })
 }
