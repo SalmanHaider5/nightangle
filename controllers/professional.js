@@ -1,3 +1,4 @@
+const { hashSync, compareSync }      = require('bcryptjs')
 const moment                         = require('moment')
 const randomize                      = require('randomatic')
 const { Professional, User, Phone }  = require('../models')
@@ -21,7 +22,9 @@ const {
         codeExpired,
         recordFound,
         phoneVerification,
-        addRecord
+        addRecord,
+        profileUpdated,
+        invalidCurrentPassword
     }
 } = require('../constants')
 
@@ -36,6 +39,177 @@ exports.create = (req, res) => {
     .catch(err => {
         res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
     })
+}
+
+exports.updateProfessional = (req, res) => {
+    const { params: { userId }, body } = req
+    console.log('Body', body)
+    Professional.findOne({ where: { userId } })
+    .then(professional => {
+        if(professional === null){
+            res.json({
+                code: error,
+                response: {
+                    title: 'Error',
+                    message: generalErrorMessage
+                },
+                error: err
+            })
+        }else{
+            Professional.update(body, { where: { userId } })
+            .then(() => {
+                res.json({
+                    code: success,
+                    response: {
+                        title: 'Profile Updated',
+                        message: profileUpdated
+                    }
+                })
+            })
+            .catch(err => {
+                res.json({
+                    code: error,
+                    response: {
+                        title: 'Error',
+                        message: generalErrorMessage
+                    },
+                    error: err
+                })
+            })
+        }
+    })
+    .catch(err => {
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
+        })
+    })
+}
+
+exports.updateProfessionalSecurityDetails = (req, res) => {
+    const { params: { userId }, body: { currentPassword, newPassword, twoFactorAuthentication } } = req
+    if(currentPassword === '' || newPassword === ''){
+        Professional.findOne({ where: { userId } })
+        .then(professional => {
+            if(professional === null){
+                res.json({
+                    code: error,
+                    response: {
+                        title: 'Error',
+                        message: generalErrorMessage
+                    }
+                })
+            }else{
+                Professional.update({ twoFactorAuthentication }, { where: { userId } })
+                .then(() => {
+                    res.json({
+                        code: success,
+                        response: {
+                            title: 'Success',
+                            message: profileUpdated
+                        }
+                    })
+                })
+                .catch(err => {
+                    res.json({
+                        code: error,
+                        response: {
+                            title: 'Error',
+                            message: generalErrorMessage
+                        },
+                        error: err
+                    })
+                })
+            }
+        })
+    }else{
+        User.findOne({ where: { id: userId } })
+        .then(user => {
+            if(user){
+                const isValid = compareSync(currentPassword, user.dataValues.password)
+                if(isValid){
+                    const hashedPassword = hashSync(newPassword, 8)
+                    User.update({ password: hashedPassword }, { where: { id: userId } })
+                    .then(() => {
+                        Professional.findOne({ where: { userId } })
+                        .then(professional => {
+                            if(professional === null){
+                                res.json({
+                                    code: error,
+                                    response: {
+                                        title: 'Error',
+                                        message: generalErrorMessage
+                                    }
+                                })
+                            }else{
+                                Professional.update({ twoFactorAuthentication }, { where: { userId } })
+                                .then(() => {
+                                    res.json({
+                                        code: success,
+                                        response: {
+                                            title: 'Success',
+                                            message: profileUpdated
+                                        }
+                                    })
+                                })
+                                .catch(err => {
+                                    res.json({
+                                        code: error,
+                                        response: {
+                                            title: 'Error',
+                                            message: generalErrorMessage
+                                        },
+                                        error: err
+                                    })
+                                })
+                            }
+                        })
+                    })
+                    .catch(err => {
+                        res.json({
+                            code: error,
+                            response: {
+                                title: 'Error',
+                                message: generalErrorMessage
+                            },
+                            error: err
+                        })
+                    })
+                }else{
+                    res.json({
+                        code: error,
+                        response: {
+                            title: 'Invalid Password',
+                            message: invalidCurrentPassword
+                        }
+                    })
+                }
+            }else{
+                res.json({
+                    code: error,
+                    response: {
+                        title: 'Error',
+                        message: generalErrorMessage
+                    }
+                })
+            }
+        })
+        .catch(err => {
+            res.json({
+                code: error,
+                response: {
+                    title: 'Error',
+                    message: generalErrorMessage
+                },
+                error: err
+            })
+        })
+    }
+    
 }
 
 exports.addPhone = (req, res) => {
@@ -78,13 +252,10 @@ exports.addPhone = (req, res) => {
                         if(status){
                                 res.json({ code: error, response: { title: 'Error', message: phoneAlreadyUsed } })
                         }else{
-                            const contact = data.dataValues
-                            const phone = contact.phone
                             const code = randomize('0', 6)
-                            contact.code = code
                             const message = `Your verification code is ${code}`
                             SendMessage(phone, message)
-                            Phone.update(contact, { where: { id: data.id } })
+                            Phone.update({ phone, code }, { where: { id: data.id } })
                             .then(() => {
                                 res.json({ code: success, response: { title: 'Phone Added',  message: phoneAdded } })
                             })
@@ -109,7 +280,6 @@ exports.verifyPhone = (req, res) => {
             res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
         }else{
             const { dataValues } = model
-            console.log('Matching...', code, dataValues.code)
             if(dataValues.code === code){
                 const codeTime = moment(model.updatedAt)
                 
@@ -142,6 +312,17 @@ exports.verifyPhone = (req, res) => {
     })
 }
 
+exports.getPhoneDetails = (req, res) => {
+    const { params: { userId } } = req
+    Phone.findOne({ where: { userId } })
+    .then(phone => {
+        res.json(phone)
+    })
+    .catch(err => {
+        res.json(err)
+    })
+}
+
 exports.getProfessionalDetails = (req, res) => {
     const { params: { userId } } = req
     User.findOne({ where: { id: userId, isVerified: true } })
@@ -153,15 +334,27 @@ exports.getProfessionalDetails = (req, res) => {
             .then(professional => {
                 if(professional === null){
                     Phone.findOne({ where: { userId, status: true } })
-                    .then((phone) => {
+                    .then(phone => {
+                        const professional = {}
                         if(phone === null){
-                            res.json({ code: info, response: { title: 'Phone Verification', message: phoneVerification }, codeType: 1 })
+                            professional.phone = {}
+                            professional.picture = {}
+                            res.json({ code: info, response: { title: 'Phone Verification', message: phoneVerification }, professional })
                         }else{
-                            res.json({ code: info, response: { title: 'Profile Verified', message: addRecord }, codeType: 2 })
+                            professional.phone = phone.dataValues
+                            professional.picture = {}
+                            res.json({ code: info, response: { title: 'Profile Verified', message: addRecord }, professional })
                         }
                     })   
                 }else{
-                    res.json({ code: success, response: { title: 'Record Found', message: recordFound }, professional, codeType: 0 })
+                    professional.dataValues.email = user.email
+                    professional.dataValues.isVerified = user.isVerified
+                    Phone.findOne({ where: { userId } })
+                    .then(contact => {
+                        professional.dataValues.phone = contact.dataValues
+                        professional.picture = {}
+                        res.json({ code: success, response: { title: 'Record Found', message: recordFound }, professional })
+                    })
                 }
             })
         }

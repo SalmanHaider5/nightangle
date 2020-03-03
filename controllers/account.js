@@ -1,7 +1,7 @@
 const { hashSync, compareSync }                     = require('bcryptjs')
 const { sign, verify }                              = require('jsonwebtoken')
 const moment                                        = require('moment')
-const { randomize }                                 = require('randomatic')
+const randomize                                     = require('randomatic')
 const { User, Token, Professional, Company, Phone } = require('../models')
 const SendEmail                                     = require('../config/email')
 const SendMessage                                   = require('../config/message')
@@ -26,7 +26,10 @@ const {
         loginSuccess,
         phoneAdded,
         codeExpired,
-        tokenInvalid
+        tokenInvalid,
+        passwordResetLinkSent,
+        passwordChangeSuccess,
+        falseCode
     },
     codes: {
         error,
@@ -35,7 +38,9 @@ const {
     },
     emailCredentials: {
         emailVerificationSubject,
-        emailVerificationMessage
+        emailVerificationMessage,
+        resetPasswordMessage,
+        resetPasswordSubject
     }
 }  = require('../constants')
 
@@ -189,6 +194,7 @@ exports.verify = (req, res) => {
                                         message: accountVerified
                                     },
                                     token,
+                                    userId: user.id,
                                     role: user.role
                                 })
                             })
@@ -257,7 +263,8 @@ exports.login = (req, res) => {
                                     title: 'Login Success',
                                     message: loginSuccess
                                 },
-                                companyId: id,
+                                userId: id,
+                                role,
                                 token: authToken
                             })
                         })
@@ -275,25 +282,39 @@ exports.login = (req, res) => {
                     else if(role === 'professional'){
                         Professional.findOne({ where: { userId: id } })
                         .then(professional => {
-                            const { twoFactorAuthentication } = professional
-                            if(twoFactorAuthentication){
-                                Phone.findOne({ where: { userId: id } })
-                                .then(userPhone => {
-                                    const code = randomize('0', 6)
-                                    const message = `Your verification code is ${code}`
-                                    userPhone.code = code
-                                    SendMessage(userPhone.phone, message)
-                                    Phone.update(userPhone, { where: { userId: id } })
-                                    .then(() => {
-                                        res.json({
-                                            code: info,
-                                            response: {
-                                                title: 'Mobile Verification Required',
-                                                message: phoneAdded
-                                            },
-                                            twoFactorAuthenticationEnabled: true,
-                                            professionalId: id
-                                        })
+                            if(professional){
+                                const { twoFactorAuthentication } = professional
+                                if(twoFactorAuthentication){
+                                    Phone.findOne({ where: { userId: id } })
+                                    .then(userPhone => {
+                                        if(userPhone){
+                                            const code = randomize('0', 6)
+                                            const message = `Your verification code is ${code}`
+                                            SendMessage(userPhone.phone, message)
+                                            Phone.update({ code }, { where: { userId: id } })
+                                            .then(() => {
+                                                res.json({
+                                                    code: info,
+                                                    response: {
+                                                        title: 'Mobile Verification Required',
+                                                        message: phoneAdded
+                                                    },
+                                                    twoFactorAuthenticationEnabled: true,
+                                                    role,
+                                                    userId: id
+                                                })
+                                            })
+                                            .catch(err => {
+                                                res.json({
+                                                    code: error,
+                                                    response: {
+                                                        title: 'Error',
+                                                        message: generalErrorMessage
+                                                    },
+                                                    error: err
+                                                })
+                                            })   
+                                        }
                                     })
                                     .catch(err => {
                                         res.json({
@@ -305,16 +326,20 @@ exports.login = (req, res) => {
                                             error: err
                                         })
                                     })
-                                })
-                                .catch(err => {
+                                }else{
+                                    const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
                                     res.json({
-                                        code: error,
+                                        code: 'success',
                                         response: {
-                                            title: 'Error',
-                                            message: generalErrorMessage
+                                            title: 'Login Success',
+                                            message: loginSuccess
                                         },
-                                    error: err})
-                                })
+                                        userId: id,
+                                        twoFactorAuthentication: false,
+                                        role,
+                                        token: authToken
+                                    })
+                                }
                             }else{
                                 const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
                                 res.json({
@@ -323,7 +348,9 @@ exports.login = (req, res) => {
                                         title: 'Login Success',
                                         message: loginSuccess
                                     },
-                                    professionalId: id,
+                                    userId: id,
+                                    twoFactorAuthentication: false,
+                                    role,
                                     token: authToken
                                 })
                             }
@@ -388,7 +415,7 @@ exports.verifyLogin = (req, res) => {
                     }
                 })
             }else{
-                const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
+                const authToken = sign({ id: professionalId }, signupSecret, { expiresIn: tokenExpiration })
                 res.json({
                     code: 'success',
                     response: {
@@ -396,7 +423,8 @@ exports.verifyLogin = (req, res) => {
                         message: loginSuccess
                     },
                     token: authToken,
-                    professionalId
+                    userId: professionalId,
+                    role: 'professional'
                 })
             }
         }else{
@@ -410,6 +438,7 @@ exports.verifyLogin = (req, res) => {
         }
     })
     .catch(err => {
+        console.log(err)
         res.json({
             code: error,
             response:{
@@ -422,22 +451,17 @@ exports.verifyLogin = (req, res) => {
 }
 
 exports.verifyToken = (req, res, next) => {
-    console.log('Token Here...!')
     let token = req.headers['x-access-token'] || req.headers['authorization']
-
-    // if(token.startsWith('Bearer ')){
-    //     token.slice(7, token.length)
-    // }
-
     if(token){
         verify(token, signupSecret, (err, decoded) => {
             if(err){
                 res.json({
                     code: error,
                     response: {
-                        title: 'Access Denied',
+                        title: 'Authorization Failed',
                         message: tokenInvalid
-                    }
+                    },
+                    error: err
                 })
             }else{
                 req.decoded = decoded
@@ -453,4 +477,93 @@ exports.verifyToken = (req, res, next) => {
             }
         })
     }
+}
+
+exports.sendPasswordResetLink = (req, res) => {
+    const { body: { email } } = req
+    User.findOne({ where: { email } })
+    .then(user => {
+        if(user === null){
+            res.json({
+                code: error,
+                response: {
+                    title: 'Account Not Found',
+                    message: userNotFound
+                }
+            })
+        }else{
+            const authToken = sign({ id: user.id }, signupSecret, { expiresIn: tokenExpiration })
+            const passwordResetUrl = `${appUrl}/${user.id}/resetPassword/${authToken}`
+            const passwordResetContent = `${resetPasswordMessage} <a href='${passwordResetUrl}' target='_blank'>Reset Password</a>`
+            SendEmail(email, resetPasswordSubject, passwordResetContent)
+            res.json({
+                code: success,
+                response: {
+                    title: 'Email Sent',
+                    message: passwordResetLinkSent
+                }
+            })
+        }
+    })
+    .catch(err => {
+        console.log(err)
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
+        })
+    })
+}
+
+exports.resetPassword = (req, res) => {
+    const { body: { password }, params: { userId } } = req
+    User.findOne({ where: { id: userId } })
+    .then(user => {
+        if(user === null){
+            res.json({
+                code: error,
+                response: {
+                    title: 'Invalid Request',
+                    message: generalErrorMessage
+                }
+            })
+        }else{
+            const hashedPassword = hashSync(password, 8)
+            User.update({ password: hashedPassword }, { where: { id: userId } })
+            .then(() => {
+                SendEmail(user.email, 'Password Reset Success', passwordChangeSuccess)
+                res.json({
+                    code: success,
+                    response: {
+                        title: 'Password Change Success',
+                        message: passwordChangeSuccess
+                    }
+                })
+            })
+            .catch(err => {
+                res.json({
+                    code: error,
+                    response: {
+                        title: 'Error',
+                        message: generalErrorMessage
+                    },
+                    error: err
+                })
+            })
+        }
+
+    })
+    .catch(err => {
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
+        })
+    })
 }

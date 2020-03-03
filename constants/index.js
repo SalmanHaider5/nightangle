@@ -2,9 +2,9 @@
 module.exports = {
 
     hostUrl: 'http://localhost:1000',
-    appUrl: 'http://localhost:3000',
+    appUrl: 'http://localhost:3005',
     signupSecret: 'nightingale',
-    tokenExpiration: 1200, // In Seconds
+    tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
     codeExpiration: 10, // In minutes
 
@@ -30,7 +30,13 @@ module.exports = {
         userNotFound: 'Account with this email not found, please register yourself',
         userNotVerified: 'Email is not verified, please verify your account to login',
         invalidPassword: 'Password is not valid, please enter correct passowrd',
-        loginSuccess: 'You have successfully logged into your account'
+        loginSuccess: 'You have successfully logged into your account',
+        tokenInvalid: 'Your authorization has been expired, please request again',
+        passwordResetLinkSent: 'Password reset link has been sent to you please reset your password',
+        passwordResetLinkExpired: 'Password reset link has been expired, please request again',
+        passwordChangeSuccess: 'Your password has been successfully changed. Please log into your account',
+        profileUpdated: 'Your profile has been successfully updated',
+        invalidCurrentPassword: 'Your current password is not valid. Please enter correct password'
     },
 
     emailCredentials: {
@@ -38,7 +44,9 @@ module.exports = {
         email: 'salman.hayder112@gmail.com',
         password: 'inspiron@I5',
         emailVerificationSubject: 'Verify your Account',
-        emailVerificationMessage: '<p>To verify your account please click on'
+        emailVerificationMessage: '<p>To verify your account please click on',
+        resetPasswordSubject: 'Reset your Password',
+        resetPasswordMessage: 'You have requested to reset your password. Please click here '
     },
 
     codes: {

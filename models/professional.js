@@ -8,6 +8,12 @@ module.exports  = (sequelize, types) => {
             autoIncrement: true,
             primaryKey: true
         },
+        status: {
+            type: STRING
+        },
+        profilePicture:{
+            type: STRING
+        },
         fullName: {
             type: STRING,
             allowNull: false
@@ -16,13 +22,19 @@ module.exports  = (sequelize, types) => {
             type: DATE,
             allowNull: false
         },
-        postalCode: {
-            type: INTEGER,
+        postCode: {
+            type: STRING,
             allowNull: false
         },
         address: {
             type: STRING,
             allowNull: false
+        },
+        city:{
+            type: STRING
+        },
+        county:{
+            type: STRING
         },
         nmcPin:{
             type: INTEGER,
@@ -33,12 +45,21 @@ module.exports  = (sequelize, types) => {
             allowNull: false,
             default: false
         },
+        distance:{
+            type: INTEGER
+        },
+        qualification:{
+            type: STRING
+        },
         twoFactorAuthentication: {
             type: BOOLEAN,
             default: false
         },
-        idField:{
+        document:{
             type: STRING
+        },
+        cpdHours:{
+            type: INTEGER
         },
         experience:{
             type: STRING(2048)
