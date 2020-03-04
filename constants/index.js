@@ -37,7 +37,8 @@ module.exports = {
         passwordChangeSuccess: 'Your password has been successfully changed. Please log into your account',
         profileUpdated: 'Your profile has been successfully updated',
         invalidCurrentPassword: 'Your current password is not valid. Please enter correct password',
-        timesheetAdded: 'Timesheet has been successfully added.'
+        timesheetAdded: 'Timesheet has been successfully added',
+        timesheetsFound: 'You can add upto 5 timesheets'
     },
 
     emailCredentials: {

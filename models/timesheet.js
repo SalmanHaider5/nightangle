@@ -1,7 +1,7 @@
 const { tables: { timesheet } } = require('../constants')
 
 module.exports  = (sequelize, types) => {
-    const { INTEGER, STRING, DATE } = types
+    const { INTEGER, DATE } = types
     return sequelize.define(timesheet, {
         id: {
             type: INTEGER,

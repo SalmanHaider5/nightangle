@@ -25,7 +25,8 @@ const {
         addRecord,
         profileUpdated,
         invalidCurrentPassword,
-        timesheetAdded
+        timesheetAdded,
+        timesheetsFound
     }
 } = require('../constants')
 
@@ -364,31 +365,38 @@ exports.getProfessionalDetails = (req, res) => {
 
 exports.addTimesheet = (req, res) => {
     const { params: { userId }, body } = req
-    const { timesheet, singleTimesheet } = 
+    const { timesheet, singleTimesheet } = body
     timesheet.userId = userId
     Timesheet.create(timesheet)
     .then(model => {
         const { id } = model
-        singleTimesheet.timesheetId = id
-        SingleTimesheet.create(singleTimesheet)
-        .then(() => {
-            res.json({
-                code: success,
-                response: {
-                    title: 'Timesheet Added',
-                    message: timesheetAdded
+        for(let i = 0; i < singleTimesheet.length; i++){
+            singleTimesheet[i].timesheetId = id
+            SingleTimesheet.create(singleTimesheet[i])
+            .then(() => {
+                if(i === singleTimesheet.length - 1){
+                    res.json({
+                        code: success,
+                        response: {
+                            title: 'Timesheet Added',
+                            message: timesheetAdded
+                        }
+                    })
                 }
             })
-        })
-        .catch(err => {
-            res.json({
-                code: error,
-                response: {
-                    title: 'Error',
-                    message: generalErrorMessage
+            .catch(err => {
+                if(i === singleTimesheet.length - 1){
+                    res.json({
+                        code: error,
+                        response: {
+                            title: 'Error',
+                            message: generalErrorMessage
+                        },
+                        error: err
+                    })
                 }
             })
-        })
+        }
     })
     .catch(err => {
         res.json({
@@ -397,6 +405,52 @@ exports.addTimesheet = (req, res) => {
                 title: 'Error',
                 message: generalErrorMessage
             }
+        })
+    })
+}
+
+exports.getSingletimesheet = (req, res) => {
+    const { params: { timesheetId } } = req
+    SingleTimesheet.findAll({ where: { timesheetId } })
+    .then(timesheet => {
+        res.json({
+            code: success,
+            timesheet
+        })
+    })
+    .catch(err => {
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
+        })
+    })
+}
+
+exports.getTimesheets = (req, res) => {
+    const { params: { userId } } = req
+    Timesheet.findAll({ where: { userId } })
+    .then(model => {
+        res.json({
+            code: model.length ? success : info,
+            response: {
+                title: model.length > 0 ? `${model.length} Timesheet(s) Found` : `No Timesheet Found`,
+                message: timesheetsFound
+            },
+            timesheets: model
+        })
+    })
+    .catch(err => {
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
         })
     })
 }

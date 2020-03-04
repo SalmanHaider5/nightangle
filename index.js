@@ -6,7 +6,7 @@ const cors                 = require('cors')
 const PORT                 = process.env.PORT || 1000
 
 const { signup, verify, login, verifyToken, sendPasswordResetLink, resetPassword, verifyLogin }                      = require('./controllers/account')
-const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, updateProfessionalSecurityDetails, addTimesheet }   = require('./controllers/professional')
+const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, updateProfessionalSecurityDetails, addTimesheet, getTimesheets, getSingletimesheet }   = require('./controllers/professional')
 const { add, getPaymentClientToken, getCompanyDetails }           = require('./controllers/company')
 
 app.use(json())
@@ -29,6 +29,8 @@ app.get('/:userId/company', verifyToken, getCompanyDetails)
 app.get('/:userId/professional', verifyToken, getProfessionalDetails)
 app.put('/:userId/professional', verifyToken, updateProfessional)
 app.post('/:userId/professional/addTimesheet', verifyToken, addTimesheet)
+app.get('/:userId/professional/timesheets', verifyToken, getTimesheets)
+app.get('/timesheet/:timesheetId', verifyToken,  getSingletimesheet)
 app.put('/:userId/professional/security', verifyToken, updateProfessionalSecurityDetails)
 app.get('/company/clientToken/:userId', verifyToken, getPaymentClientToken)
 
