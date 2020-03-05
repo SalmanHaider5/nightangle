@@ -26,7 +26,10 @@ const {
         profileUpdated,
         invalidCurrentPassword,
         timesheetAdded,
-        timesheetsFound
+        timesheetsFound,
+        shiftStatusChanged,
+        shiftChanged,
+        timesheetDeleted
     }
 } = require('../constants')
 
@@ -454,3 +457,88 @@ exports.getTimesheets = (req, res) => {
         })
     })
 }
+
+exports.updateShiftStatus = (req, res) => {
+    const { params: { shift, status } } = req
+    SingleTimesheet.update({ status }, { where: { id: shift } })
+    .then(() => {
+        res.json({
+            code: success,
+            response: {
+                title: 'Status Updated',
+                message: shiftStatusChanged
+            }
+        })
+    })
+    .catch(err => {
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
+        })
+    })
+}
+
+exports.updateTimesheetShift = (req, res) => {
+    const { params: { shiftId }, body } = req
+    SingleTimesheet.update(body, { where: { id: shiftId } })
+    .then(() => {
+        res.json({
+            code: success,
+            response: {
+                title: 'Shift Changed',
+                message: shiftChanged
+            }
+        })
+    })
+    .catch(err => {
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
+        })
+    })
+}
+
+exports.deleteTimesheet = (req, res) => {
+    const { params: { timesheetId } } = req
+    Timesheet.destroy({ where: { id: timesheetId } })
+    .then(() => {
+        SingleTimesheet.destroy({ where: { timesheetId } })
+        .then(() => {
+            res.json({
+                code: success,
+                response: {
+                    title: 'Timesheet Deleted',
+                    message: timesheetDeleted
+                }
+            })
+        })
+        .catch(err => {
+            res.json({
+                code: error,
+                response: {
+                    title: 'Error',
+                    message: generalErrorMessage
+                },
+                error: err
+            })
+        })
+    })
+    .catch(err => {
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
+        })
+    })
+} 
