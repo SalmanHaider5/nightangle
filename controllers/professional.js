@@ -33,8 +33,16 @@ const {
     }
 } = require('../constants')
 
+
 exports.create = (req, res) => {
-    const { params: { userId }, body } = req
+    const { params: { userId }, files } = req
+    let { body } = req
+    if(files && files.document){
+        body.document = req.files.document[0].filename
+    }
+    if(files && files.profilePicture){
+        body.profilePicture = req.files.profilePicture[0].filename
+    }
     const professional = body
     professional.userId = userId
     Professional.create(professional)

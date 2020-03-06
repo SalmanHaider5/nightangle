@@ -1,9 +1,24 @@
 const express              = require('express')
 const { json, urlencoded } = require('body-parser')
+const cors                 = require('cors')
+const multer               = require('multer')
 const app                  = express()
 const models               = require('./models')
-const cors                 = require('cors')
 const PORT                 = process.env.PORT || 1000
+
+
+app.use(express.static('public'))
+const publicUpload = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './public')
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname)
+    }
+})
+
+const upload = multer({ storage: publicUpload })
+var fileUpload = upload.fields([{ name: 'profilePicture', maxCount: 1 }, { name: 'document', maxCount: 1 }])
 
 const { signup, verify, login, verifyToken, sendPasswordResetLink, resetPassword, verifyLogin }                      = require('./controllers/account')
 const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, deleteTimesheet, updateProfessionalSecurityDetails, updateTimesheetShift, addTimesheet, getTimesheets, getSingletimesheet, updateShiftStatus }   = require('./controllers/professional')
@@ -19,7 +34,7 @@ app.post('/login', login)
 app.post('/signup', signup)
 app.get('/:userId/verify/:token', verify)
 app.post('/reset', sendPasswordResetLink)
-app.post('/:userId/professional', create)
+app.post('/:userId/professional', verifyToken, fileUpload, create)
 app.post('/:userId/addPhone', addPhone)
 app.post('/:userId/verifyPhone', verifyPhone)
 app.post('/:userId/company', add)
