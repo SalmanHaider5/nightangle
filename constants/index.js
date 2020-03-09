@@ -1,8 +1,8 @@
 
 module.exports = {
 
-    hostUrl: 'http://localhost:1000',
-    appUrl: 'http://localhost:3005',
+    hostUrl: 'http://intelligent-innovation.herokuapp.com/',
+    appUrl: 'http://nightingaleapp.herokuapp.com/',
     signupSecret: 'nightingale',
     tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
