@@ -28,6 +28,9 @@ const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessiona
 const { add, getPaymentClientToken, getCompanyDetails }           = require('./controllers/company')
 
 models.sequelize.sync();
+app.get('/', (req, res) => {
+    res.json({app: 'App is running'})
+})
 
 app.post('/login', login)
 app.post('/signup', signup)
