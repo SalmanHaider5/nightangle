@@ -54,6 +54,6 @@ app.put('/shiftStatusChange/:shift/:status', verifyToken, updateShiftStatus)
 app.put('/shift/:shiftId', verifyToken, updateTimesheetShift)
 app.delete('/timesheet/:timesheetId', verifyToken, deleteTimesheet)
 
-app.listen(1000, () => {
+app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)
 })
