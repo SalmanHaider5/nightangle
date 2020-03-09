@@ -46,8 +46,8 @@ module.exports = {
 
     emailCredentials: {
         service: 'gmail',
-        email: 'salman.hayder112@gmail.com',
-        password: 'inspiron@I5',
+        email: 'malachy2@gmail.com',
+        password: '75122817',
         emailVerificationSubject: 'Verify your Account',
         emailVerificationMessage: '<p>To verify your account please click on',
         resetPasswordSubject: 'Reset your Password',
