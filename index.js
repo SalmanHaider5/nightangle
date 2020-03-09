@@ -6,8 +6,11 @@ const app                  = express()
 const models               = require('./models')
 const PORT                 = process.env.PORT || 1000
 
-
+app.use(json())
+app.use(cors())
+app.use(urlencoded({ extended: true }))
 app.use(express.static('public'))
+
 const publicUpload = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, './public')
@@ -24,10 +27,6 @@ const { signup, verify, login, verifyToken, sendPasswordResetLink, resetPassword
 const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, deleteTimesheet, updateProfessionalSecurityDetails, updateTimesheetShift, addTimesheet, getTimesheets, getSingletimesheet, updateShiftStatus }   = require('./controllers/professional')
 const { add, getPaymentClientToken, getCompanyDetails }           = require('./controllers/company')
 
-app.use(json())
-app.use(cors())
-app.use(urlencoded({ extended: true }))
-
 models.sequelize.sync();
 
 app.post('/login', login)
@@ -41,8 +40,8 @@ app.post('/:userId/company', add)
 app.post('/resetPassword/:userId', verifyToken, resetPassword)
 app.post('/verifyLogin', verifyLogin)
 app.get('/:userId/company', verifyToken, getCompanyDetails)
-app.get('/:userId/professional', verifyToken, getProfessionalDetails)
-app.put('/:userId/professional', verifyToken, updateProfessional)
+app.get('/:userId/professional', verifyToken,  getProfessionalDetails)
+app.put('/:userId/professional', verifyToken, fileUpload, updateProfessional)
 app.post('/:userId/professional/addTimesheet', verifyToken, addTimesheet)
 app.get('/:userId/professional/timesheets', verifyToken, getTimesheets)
 app.get('/timesheet/:timesheetId', verifyToken,  getSingletimesheet)

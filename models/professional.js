@@ -42,7 +42,6 @@ module.exports  = (sequelize, types) => {
         },
         hasTransport: {
             type: BOOLEAN,
-            allowNull: false,
             default: false
         },
         distance:{

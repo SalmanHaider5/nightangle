@@ -55,8 +55,13 @@ exports.create = (req, res) => {
 }
 
 exports.updateProfessional = (req, res) => {
-    const { params: { userId }, body } = req
-    console.log('Body', body)
+    const { params: { userId }, body, files } = req
+    if(files && files.document){
+        body.document = req.files.document[0].filename
+    }
+    if(files && files.profilePicture){
+        body.profilePicture = req.files.profilePicture[0].filename
+    }
     Professional.findOne({ where: { userId } })
     .then(professional => {
         if(professional === null){
@@ -349,13 +354,13 @@ exports.getProfessionalDetails = (req, res) => {
                     Phone.findOne({ where: { userId, status: true } })
                     .then(phone => {
                         const professional = {}
+                        professional.email = user.email
+                        professional.isVerified = user.isVerified
                         if(phone === null){
                             professional.phone = {}
-                            professional.picture = {}
                             res.json({ code: info, response: { title: 'Phone Verification', message: phoneVerification }, professional })
                         }else{
                             professional.phone = phone.dataValues
-                            professional.picture = {}
                             res.json({ code: info, response: { title: 'Profile Verified', message: addRecord }, professional })
                         }
                     })   
@@ -365,7 +370,6 @@ exports.getProfessionalDetails = (req, res) => {
                     Phone.findOne({ where: { userId } })
                     .then(contact => {
                         professional.dataValues.phone = contact.dataValues
-                        professional.picture = {}
                         res.json({ code: success, response: { title: 'Record Found', message: recordFound }, professional })
                     })
                 }
@@ -391,7 +395,8 @@ exports.addTimesheet = (req, res) => {
                         response: {
                             title: 'Timesheet Added',
                             message: timesheetAdded
-                        }
+                        },
+                        timesheetId: id
                     })
                 }
             })
