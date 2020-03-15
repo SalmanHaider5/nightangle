@@ -321,7 +321,7 @@ exports.verifyPhone = (req, res) => {
                     }
                 }
             }else{
-                res.json({ code: error, response:{ title: 'Error', message: falseCode } })
+                res.json({ code: error, response:{ title: 'Invalid Code', message: falseCode } })
             }
         }
     })
@@ -351,7 +351,7 @@ exports.getProfessionalDetails = (req, res) => {
             Professional.findOne({ where: { userId } })
             .then(professional => {
                 if(professional === null){
-                    Phone.findOne({ where: { userId, status: true } })
+                    Phone.findOne({ where: { userId } })
                     .then(phone => {
                         const professional = {}
                         professional.email = user.email
@@ -360,8 +360,9 @@ exports.getProfessionalDetails = (req, res) => {
                             professional.phone = {}
                             res.json({ code: info, response: { title: 'Phone Verification', message: phoneVerification }, professional })
                         }else{
-                            professional.phone = phone.dataValues
-                            res.json({ code: info, response: { title: 'Profile Verified', message: addRecord }, professional })
+                            professional.phone = phone.dataValues.phone
+                            professional.phoneStatus = phone.dataValues.status
+                            res.json({ code: info, response: { title: 'Email Verified', message: addRecord }, professional })
                         }
                     })   
                 }else{
@@ -369,7 +370,8 @@ exports.getProfessionalDetails = (req, res) => {
                     professional.dataValues.isVerified = user.isVerified
                     Phone.findOne({ where: { userId } })
                     .then(contact => {
-                        professional.dataValues.phone = contact.dataValues
+                        professional.dataValues.phone = contact.dataValues.phone
+                        professional.dataValues.phoneStatus = contact.dataValues.status
                         res.json({ code: success, response: { title: 'Record Found', message: recordFound }, professional })
                     })
                 }
@@ -448,7 +450,12 @@ exports.getSingletimesheet = (req, res) => {
 
 exports.getTimesheets = (req, res) => {
     const { params: { userId } } = req
-    Timesheet.findAll({ where: { userId } })
+    Timesheet.findAll({
+        where: { userId },
+        order: [
+            ['startingDay', 'ASC']
+        ]
+    })
     .then(model => {
         res.json({
             code: model.length ? success : info,
