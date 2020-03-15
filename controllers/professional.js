@@ -357,7 +357,8 @@ exports.getProfessionalDetails = (req, res) => {
                         professional.email = user.email
                         professional.isVerified = user.isVerified
                         if(phone === null){
-                            professional.phone = {}
+                            professional.phone = ''
+                            professional.phoneStatus = false
                             res.json({ code: info, response: { title: 'Phone Verification', message: phoneVerification }, professional })
                         }else{
                             professional.phone = phone.dataValues.phone

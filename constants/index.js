@@ -1,8 +1,8 @@
 
 module.exports = {
 
-    hostUrl: 'http://localhost:1000',
-    appUrl: 'http://localhost:3005',
+    hostUrl: 'http://192.168.1.102:1000',
+    appUrl: 'http://192.168.1.102:3005',
     signupSecret: 'nightingale',
     tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
