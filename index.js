@@ -30,7 +30,7 @@ const { add, getPaymentClientToken, getCompanyDetails }           = require('./c
 models.sequelize.sync();
 
 app.get('/', (req, res)=>{
-    res.json({message: 'Server is running'})
+    res.json({message: `Server is running on Port ${PORT}`})
 })
 
 app.post('/login', login)
