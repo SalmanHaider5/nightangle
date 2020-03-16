@@ -1,8 +1,8 @@
 
 module.exports = {
 
-    hostUrl: 'http://192.168.1.102:1000',
-    appUrl: 'http://192.168.1.102:3005',
+    hostUrl: 'http://intelligent-innovation.herokuapp.com/',
+    appUrl: 'http://nightingaleapp.herokuapp.com/',
     signupSecret: 'nightingale',
     tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
@@ -46,8 +46,8 @@ module.exports = {
 
     emailCredentials: {
         service: 'gmail',
-        email: 'salman.hayder112@gmail.com',
-        password: 'inspiron@I5',
+        email: 'malachy2@gmail.com',
+        password: '75122817',
         emailVerificationSubject: 'Verify your Account',
         emailVerificationMessage: '<p>To verify your account please click on',
         resetPasswordSubject: 'Reset your Password',

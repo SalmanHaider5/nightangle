@@ -4,7 +4,7 @@ const cors                 = require('cors')
 const multer               = require('multer')
 const app                  = express()
 const models               = require('./models')
-const PORT                 = process.env.PORT || 1000
+const PORT                 = process.env.PORT || 8080
 
 app.use(json())
 app.use(cors())
@@ -51,6 +51,6 @@ app.put('/shiftStatusChange/:shift/:status', verifyToken, updateShiftStatus)
 app.put('/shift/:shiftId', verifyToken, updateTimesheetShift)
 app.delete('/timesheet/:timesheetId', verifyToken, deleteTimesheet)
 
-app.listen(1000, () => {
+app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)
 })
