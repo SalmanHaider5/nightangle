@@ -55,7 +55,7 @@ exports.signup = (req, res) => {
                 email: email.trim(),
                 password: hashedPassword,
                 role,
-                isVerified: false
+                isVerified: true
             }
             User.create(data)
             .then(model => {
