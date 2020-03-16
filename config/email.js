@@ -25,7 +25,13 @@ module.exports = (to, subject, content) => {
         html: content
     }
     sender.sendMail(options, (err, info) => {
-        if(err) return err
-        else return info
+        if(err){
+            console.log('Mail Error', err)
+            return err
+        }
+        else{
+            console.log('Mail Info', info)
+            return info
+        }
     })
 }

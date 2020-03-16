@@ -57,6 +57,7 @@ exports.signup = (req, res) => {
                 role,
                 isVerified: true
             }
+            console.log(data)
             User.create(data)
             .then(model => {
                 const { id, email } = model
