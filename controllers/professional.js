@@ -252,6 +252,7 @@ exports.addPhone = (req, res) => {
                                 contact.status = false
                                 contact.userId = userId
                                 const message = `Your verification code is ${code}`
+                                console.log('Code', code)
                                 SendMessage(phone, message)
                                 Phone.create(contact)
                                 .then(() => {
@@ -272,6 +273,7 @@ exports.addPhone = (req, res) => {
                         }else{
                             const code = randomize('0', 6)
                             const message = `Your verification code is ${code}`
+                            console.log('Code', code)
                             SendMessage(phone, message)
                             Phone.update({ phone, code }, { where: { id: data.id } })
                             .then(() => {
