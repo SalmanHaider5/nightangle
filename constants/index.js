@@ -45,7 +45,7 @@ module.exports = {
     },
 
     emailCredentials: {
-        service: 'gmail',
+        service: 'smtp.gmail.com',
         email: 'malachy2@gmail.com',
         password: '75122817',
         emailVerificationSubject: 'Verify your Account',

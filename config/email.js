@@ -10,6 +10,7 @@ const {
 
 const sender = nodemailer.createTransport({
     service,
+    port: 465,
     auth: {
         user: email,
         pass: password
