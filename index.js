@@ -29,6 +29,10 @@ const { add, getPaymentClientToken, getCompanyDetails }           = require('./c
 
 models.sequelize.sync();
 
+app.get('/', (req, res)=>{
+    res.json({message: 'Server is running'})
+})
+
 app.post('/login', login)
 app.post('/signup', signup)
 app.get('/:userId/verify/:token', verify)
