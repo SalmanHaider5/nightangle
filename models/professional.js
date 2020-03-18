@@ -37,7 +37,7 @@ module.exports  = (sequelize, types) => {
             type: STRING
         },
         nmcPin:{
-            type: INTEGER,
+            type: STRING,
             allowNull: false
         },
         hasTransport: {

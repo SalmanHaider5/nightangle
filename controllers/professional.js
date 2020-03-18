@@ -388,10 +388,12 @@ exports.addTimesheet = (req, res) => {
     Timesheet.create(timesheet)
     .then(model => {
         const { id } = model
+        const schedule = []
         for(let i = 0; i < singleTimesheet.length; i++){
             singleTimesheet[i].timesheetId = id
             SingleTimesheet.create(singleTimesheet[i])
-            .then(() => {
+            .then(data => {
+                schedule.push(data)
                 if(i === singleTimesheet.length - 1){
                     res.json({
                         code: success,
@@ -399,7 +401,8 @@ exports.addTimesheet = (req, res) => {
                             title: 'Timesheet Added',
                             message: timesheetAdded
                         },
-                        timesheetId: id
+                        timesheetId: id,
+                        schedule
                     })
                 }
             })
