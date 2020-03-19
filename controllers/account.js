@@ -67,7 +67,7 @@ exports.signup = (req, res) => {
                 }
                 Token.create(tokenData)
                 .then(() => {
-                    const verificationUrl = `${appUrl}/${id}/verify/${authToken}`
+                    const verificationUrl = `${appUrl}${id}/verify/${authToken}`
                     const verificationEmailContent = `${emailVerificationMessage} <a href='${verificationUrl}' target='_blank'>Verify Me</a>`
                     SendEmail(email, emailVerificationSubject, verificationEmailContent)
                     res.json({
@@ -117,7 +117,7 @@ exports.signup = (req, res) => {
                     token: authToken
                 }
                 Token.create(tokenData)
-                const verificationUrl = `${appUrl}/${id}/verify/${authToken}`
+                const verificationUrl = `${appUrl}${id}/verify/${authToken}`
                 const verificationEmailContent = `${emailVerificationMessage} <a href='${verificationUrl}' target='_blank'>Verify Me</a>`
                 SendEmail(email, emailVerificationSubject, verificationEmailContent)
                 res.json({
@@ -493,7 +493,7 @@ exports.sendPasswordResetLink = (req, res) => {
             })
         }else{
             const authToken = sign({ id: user.id }, signupSecret, { expiresIn: tokenExpiration })
-            const passwordResetUrl = `${appUrl}/${user.id}/resetPassword/${authToken}`
+            const passwordResetUrl = `${appUrl}${user.id}/resetPassword/${authToken}`
             const passwordResetContent = `${resetPasswordMessage} <a href='${passwordResetUrl}' target='_blank'>Reset Password</a>`
             SendEmail(email, resetPasswordSubject, passwordResetContent)
             res.json({
