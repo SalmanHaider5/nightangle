@@ -9,7 +9,8 @@ const {
 } = require('../constants')
 
 const sender = nodemailer.createTransport({
-    service,
+    host: service,
+    port: 465,
     auth: {
         user: email,
         pass: password

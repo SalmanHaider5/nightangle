@@ -4,7 +4,7 @@ const cors                 = require('cors')
 const multer               = require('multer')
 const app                  = express()
 const models               = require('./models')
-const PORT                 = process.env.PORT || 1000
+const PORT                 = process.env.PORT || 8080
 
 app.use(json())
 app.use(cors())
@@ -31,6 +31,10 @@ const { signup, verify, login, verifyToken, sendPasswordResetLink, resetPassword
 const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, deleteTimesheet, updateProfessionalSecurityDetails, updateTimesheetShift, addTimesheet, getTimesheets, getSingletimesheet, updateShiftStatus }   = require('./controllers/professional')
 const { add, getPaymentClientToken, getCompanyDetails }           = require('./controllers/company')
 
+app.get('/', (req, res)=>{
+    res.json({message: 'Server is running'})
+})
+
 models.sequelize.sync();
 
 app.post('/login', login)
@@ -55,6 +59,6 @@ app.put('/shiftStatusChange/:shift/:status', verifyToken, updateShiftStatus)
 app.put('/shift/:shiftId', verifyToken, updateTimesheetShift)
 app.delete('/timesheet/:timesheetId', verifyToken, deleteTimesheet)
 
-app.listen(1000, () => {
+app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)
 })
