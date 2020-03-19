@@ -57,6 +57,9 @@ module.exports  = (sequelize, types) => {
         document:{
             type: STRING
         },
+        crbDocument: {
+            type: STRING
+        },
         cpdHours:{
             type: INTEGER
         },

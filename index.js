@@ -21,7 +21,11 @@ const publicUpload = multer.diskStorage({
 })
 
 const upload = multer({ storage: publicUpload })
-var fileUpload = upload.fields([{ name: 'profilePicture', maxCount: 1 }, { name: 'document', maxCount: 1 }])
+var fileUpload = upload.fields([
+    { name: 'profilePicture', maxCount: 1 },
+    { name: 'document', maxCount: 1 },
+    { name: 'crbDocument', maxCount: 1 }
+])
 
 const { signup, verify, login, verifyToken, sendPasswordResetLink, resetPassword, verifyLogin }                      = require('./controllers/account')
 const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, deleteTimesheet, updateProfessionalSecurityDetails, updateTimesheetShift, addTimesheet, getTimesheets, getSingletimesheet, updateShiftStatus }   = require('./controllers/professional')
