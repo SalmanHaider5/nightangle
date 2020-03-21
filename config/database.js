@@ -1,7 +1,7 @@
 module.exports = {
     HOST: 'us-cdbr-iron-east-04.cleardb.net',
-    USER: 'bafbc9b018643d',
-    PASSWORD: '15e93e3b',
-    DB: 'heroku_f399acfad5c802d',
+    USER: 'bddc387d4902fd',
+    PASSWORD: 'a4a2d578',
+    DB: 'heroku_ff73a726e63a34f',
     DIALECT: 'mysql'
 }
