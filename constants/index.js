@@ -2,7 +2,7 @@
 module.exports = {
 
     hostUrl: 'https://intelligent-innovation.herokuapp.com/',
-    appUrl: 'https://nightingaleapp.herokuapp.com/',
+    appUrl: 'https://nmcregistered.org.uk/',
     signupSecret: 'nightingale',
     tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
@@ -48,7 +48,7 @@ module.exports = {
         service: 'smtp.gmail.com',
         email: 'malachy2@gmail.com',
         password: '75122817',
-        emailVerificationSubject: 'Verify your Account',
+        emailVerificationSubject: 'Account Verification',
         emailVerificationMessage: '<p>To verify your account please click on',
         resetPasswordSubject: 'Reset your Password',
         resetPasswordMessage: 'You have requested to reset your password. Please click here '
