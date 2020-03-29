@@ -10,7 +10,7 @@ const {
 
 const sender = nodemailer.createTransport({
     host: 'nmcregistered.org.uk',
-    port: 465,
+    port: 587,
     auth: {
         user: 'account@nmcregistered.org.uk',
         pass: 'Care@1234'
