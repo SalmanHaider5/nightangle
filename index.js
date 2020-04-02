@@ -1,3 +1,33 @@
+
+import { Madeeha, Haider } from 'Genes'
+
+class Izzah {
+
+    getCharacteristics = () => {
+        cuteness = Madeeha.cuteness;
+        beauty = Madeeha.beauty;
+        lovingNature = Madeeha.lovingNature;
+        foodie = Madeeha.foodie;
+        programmingSkills = Haider.programmingSkills;
+        singing = none;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const express              = require('express')
 const { json, urlencoded } = require('body-parser')
 const cors                 = require('cors')
@@ -62,3 +92,7 @@ app.delete('/timesheet/:timesheetId', verifyToken, deleteTimesheet)
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)
 })
+
+
+
+
