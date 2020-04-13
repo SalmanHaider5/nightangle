@@ -29,7 +29,8 @@ var fileUpload = upload.fields([
 
 const { signup, verify, login, verifyToken, sendPasswordResetLink, resetPassword, verifyLogin }                      = require('./controllers/account')
 const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, deleteTimesheet, updateProfessionalSecurityDetails, updateTimesheetShift, addTimesheet, getTimesheets, getSingletimesheet, updateShiftStatus }   = require('./controllers/professional')
-const { add, getPaymentClientToken, getCompanyDetails }           = require('./controllers/company')
+const { add, getPaymentClientToken, getCompanyDetails, changePassword, updateCompany, searchProfessionals }           = require('./controllers/company')
+const { sendMessage } = require('./controllers/contact')
 
 models.sequelize.sync();
 
@@ -54,6 +55,10 @@ app.get('/company/clientToken/:userId', verifyToken, getPaymentClientToken)
 app.put('/shiftStatusChange/:shift/:status', verifyToken, updateShiftStatus)
 app.put('/shift/:shiftId', verifyToken, updateTimesheetShift)
 app.delete('/timesheet/:timesheetId', verifyToken, deleteTimesheet)
+app.put('/:userId/company/changePassword', verifyToken, changePassword)
+app.post('/user/sendMessage', verifyToken, sendMessage)
+app.put('/:userId/company', verifyToken, updateCompany)
+app.get('/:userId/search/:skill', verifyToken, searchProfessionals)
 
 app.listen(1000, () => {
     console.log(`Server is listening on port ${PORT}`)

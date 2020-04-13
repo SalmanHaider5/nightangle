@@ -1,8 +1,8 @@
 
 module.exports = {
 
-    hostUrl: 'http://192.168.1.102:1000',
-    appUrl: 'http://192.168.1.102:3005',
+    hostUrl: 'http://192.168.8.101:1000',
+    appUrl: 'http://192.168.8.101:3005',
     signupSecret: 'nightingale',
     tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
@@ -35,13 +35,16 @@ module.exports = {
         passwordResetLinkSent: 'Password reset link has been sent to you please reset your password',
         passwordResetLinkExpired: 'Password reset link has been expired, please request again',
         passwordChangeSuccess: 'Your password has been successfully changed. Please log into your account',
+        passwordChanged: 'Your password has been successfully changed',
         profileUpdated: 'Your profile has been successfully updated',
         invalidCurrentPassword: 'Your current password is not valid. Please enter correct password',
         timesheetAdded: 'Timesheet has been successfully added',
         timesheetsFound: 'You can add upto 5 timesheets',
         shiftStatusChanged: 'Your status has been successfully changed',
         shiftChanged: 'Shift has been successfully changed',
-        timesheetDeleted: 'Timesheet has been successfully deleted'
+        timesheetDeleted: 'Timesheet has been successfully deleted',
+        messageSent: 'Your message has been delivered. You will be reached soon',
+        accessDenied: 'You are not authorized to perform this action'
     },
 
     emailCredentials: {

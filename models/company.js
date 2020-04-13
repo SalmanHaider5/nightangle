@@ -35,7 +35,7 @@ module.exports  = (sequelize, types) => {
             type: STRING
         },
         postalCode: {
-            type: INTEGER,
+            type: STRING,
             allowNull: false
         },
         website: {
@@ -48,6 +48,9 @@ module.exports  = (sequelize, types) => {
         registration: {
             type: INTEGER,
             allowNull: false
+        },
+        isPaid:{
+            type: BOOLEAN
         },
         charity: {
             type: STRING
