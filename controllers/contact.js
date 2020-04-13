@@ -10,7 +10,7 @@ const {
 
 exports.sendMessage = (req, res) => {
     const { body: { name, phone, email, subject, message } } = req
-    const account = 'salman.hayder112@gmail.com'
+    const account = 'malhughes@fastmail.com'
     let content = `<b>Name: </b>${name}<br>`
     content += `<b>Phone: </b>${phone}<br>`
     content += `<b>Email: </b>${email}<br>`

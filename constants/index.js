@@ -1,8 +1,8 @@
 
 module.exports = {
 
-    hostUrl: 'http://192.168.8.101:1000',
-    appUrl: 'http://192.168.8.101:3005',
+    hostUrl: 'https://intelligent-innovation.herokuapp.com/',
+    appUrl: 'https://nmcregistered.org.uk/',
     signupSecret: 'nightingale',
     tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
@@ -48,10 +48,10 @@ module.exports = {
     },
 
     emailCredentials: {
-        service: 'gmail',
-        email: 'salman.hayder112@gmail.com',
-        password: 'inspiron@I5',
-        emailVerificationSubject: 'Verify your Account',
+        service: 'smtp.gmail.com',
+        email: 'malachy2@gmail.com',
+        password: '75122817',
+        emailVerificationSubject: 'Account Verification',
         emailVerificationMessage: '<p>To verify your account please click on',
         resetPasswordSubject: 'Reset your Password',
         resetPasswordMessage: 'You have requested to reset your password. Please click here '

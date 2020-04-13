@@ -4,7 +4,7 @@ const cors                 = require('cors')
 const multer               = require('multer')
 const app                  = express()
 const models               = require('./models')
-const PORT                 = process.env.PORT || 1000
+const PORT                 = process.env.PORT || 8080
 
 app.use(json())
 app.use(cors())
@@ -60,6 +60,6 @@ app.post('/user/sendMessage', verifyToken, sendMessage)
 app.put('/:userId/company', verifyToken, updateCompany)
 app.get('/:userId/search/:skill', verifyToken, searchProfessionals)
 
-app.listen(1000, () => {
+app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)
 })

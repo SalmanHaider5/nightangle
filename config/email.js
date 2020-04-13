@@ -9,16 +9,18 @@ const {
 } = require('../constants')
 
 const sender = nodemailer.createTransport({
-    service,
+    host: 'nmcregistered.org.uk',
+    port: 465,
+    secure: true,
     auth: {
-        user: email,
-        pass: password
+        user: 'account@nmcregistered.org.uk',
+        pass: 'Care@1234'
     }
 })
 
 module.exports = (to, subject, content) => {
     const options = {
-        from: email,
+        from: '"NMC Account" <account@nmcregistered.org.uk>',
         to,
         subject,
         html: content
