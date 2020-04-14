@@ -57,6 +57,7 @@ app.put('/shift/:shiftId', verifyToken, updateTimesheetShift)
 app.delete('/timesheet/:timesheetId', verifyToken, deleteTimesheet)
 app.put('/:userId/company/changePassword', verifyToken, changePassword)
 app.post('/user/sendMessage', verifyToken, sendMessage)
+app.post('/guest/sendMessage', sendMessage)
 app.put('/:userId/company', verifyToken, updateCompany)
 app.get('/:userId/search/:skill', verifyToken, searchProfessionals)
 
