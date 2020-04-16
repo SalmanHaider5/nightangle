@@ -139,7 +139,10 @@ exports.getCompanyDetails = (req, res) => {
             Company.findOne({ where: { userId } })
             .then(company => {
                 if(company === null){
-                    res.json({ code: info, response: { title: 'Profile Verified', message: addRecord } })   
+                    const company = {}
+                    company.email = user.email
+                    company.isVerified = user.isVerified
+                    res.json({ code: info, response: { title: 'Profile Verified', message: addRecord }, company })   
                 }else{
                     company.dataValues.email = user.email
                     company.dataValues.isVerified = user.isVerified
