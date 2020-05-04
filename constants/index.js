@@ -44,7 +44,9 @@ module.exports = {
         shiftChanged: 'Shift has been successfully changed',
         timesheetDeleted: 'Timesheet has been successfully deleted',
         messageSent: 'Your message has been delivered. You will be reached soon',
-        accessDenied: 'You are not authorized to perform this action'
+        accessDenied: 'You are not authorized to perform this action',
+        secretRetrieved: 'Payment Secret has been retrieved successfully',
+        paymentReceived: 'Your payment has been received.'
     },
 
     emailCredentials: {
@@ -70,12 +72,14 @@ module.exports = {
         company: 'company',
         phone: 'phone',
         timesheet: 'timesheet',
-        singleTimesheet: 'singleTimesheet'
+        singleTimesheet: 'singleTimesheet',
+        payment: 'payment'
     },
 
-    braintreeCredentials: {
-        merchantId: 'wm733scpkh998vsc',
-        publicKey: 'jj7zg2csp5ppmj25',
-        privateKey: '3918d7f4464c74cbcaab666ea568c402'
+    stripeCredentials: {
+        secretKey: 'sk_test_1CKG3l4djbNIKfpHOD3Yrs3o00s2auBOs1',
+        amount: '480',
+        currency: 'gbp',
+        paymentIntentId: 'pi_1Gb3gdHrrJ26Tytgj2IdeMq4'
     }
 }

@@ -470,7 +470,7 @@ exports.getTimesheets = (req, res) => {
         res.json({
             code: model.length ? success : info,
             response: {
-                title: model.length > 0 ? `${model.length} Timesheet(s) Found` : `No Timesheet Found`,
+                title: model.length > 0 ? `Timesheet(s) Found` : `No Timesheet Found`,
                 message: timesheetsFound
             },
             timesheets: model

@@ -4,7 +4,7 @@ const cors                 = require('cors')
 const multer               = require('multer')
 const app                  = express()
 const models               = require('./models')
-const PORT                 = process.env.PORT || 8080
+const PORT                 = process.env.PORT || 1000
 
 app.use(json())
 app.use(cors())
@@ -29,8 +29,9 @@ var fileUpload = upload.fields([
 
 const { signup, verify, login, verifyToken, sendPasswordResetLink, resetPassword, verifyLogin }                      = require('./controllers/account')
 const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, deleteTimesheet, updateProfessionalSecurityDetails, updateTimesheetShift, addTimesheet, getTimesheets, getSingletimesheet, updateShiftStatus }   = require('./controllers/professional')
-const { add, getPaymentClientToken, getCompanyDetails, changePassword, updateCompany, searchProfessionals }           = require('./controllers/company')
+const { add, getCompanyDetails, changePassword, updateCompany, searchProfessionals, searchTimesheets, filterProfessionalsByShift, makePayment }           = require('./controllers/company')
 const { sendMessage } = require('./controllers/contact')
+const { createClientSecret } = require('./controllers/payment')
 
 models.sequelize.sync();
 
@@ -51,7 +52,6 @@ app.post('/:userId/professional/addTimesheet', verifyToken, addTimesheet)
 app.get('/:userId/professional/timesheets', verifyToken, getTimesheets)
 app.get('/timesheet/:timesheetId', verifyToken,  getSingletimesheet)
 app.put('/:userId/professional/security', verifyToken, updateProfessionalSecurityDetails)
-app.get('/company/clientToken/:userId', verifyToken, getPaymentClientToken)
 app.put('/shiftStatusChange/:shift/:status', verifyToken, updateShiftStatus)
 app.put('/shift/:shiftId', verifyToken, updateTimesheetShift)
 app.delete('/timesheet/:timesheetId', verifyToken, deleteTimesheet)
@@ -60,6 +60,10 @@ app.post('/user/sendMessage', verifyToken, sendMessage)
 app.post('/guest/sendMessage', sendMessage)
 app.put('/:userId/company', verifyToken, updateCompany)
 app.get('/:userId/search/:skill', verifyToken, searchProfessionals)
+app.get('/timesheets/:professionalId', verifyToken, searchTimesheets)
+app.get('/timesheet/:timesheetId/search', verifyToken, filterProfessionalsByShift)
+app.post('/company/:userId/payment', verifyToken, makePayment)
+app.get('/company/clientSecret', verifyToken, createClientSecret)
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)

@@ -49,10 +49,10 @@ module.exports  = (sequelize, types) => {
             type: INTEGER,
             allowNull: false
         },
-        isPaid:{
+        charity: {
             type: BOOLEAN
         },
-        charity: {
+        charityReg: {
             type: STRING
         },
         subsidiary: {

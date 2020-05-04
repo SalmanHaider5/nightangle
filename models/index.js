@@ -9,12 +9,13 @@ const sequelize = new Sequelize(DB, USER, PASSWORD, {
 const models = {}
 models.sequelize = sequelize
 
-models.User         = require('./user')(sequelize, DataTypes)
-models.Token        = require('./token')(sequelize, DataTypes)
-models.Company      = require('./company')(sequelize, DataTypes)
-models.Phone        = require('./phone')(sequelize, DataTypes)
-models.Professional = require('./professional')(sequelize, DataTypes)
+models.User            = require('./user')(sequelize, DataTypes)
+models.Professional    = require('./professional')(sequelize, DataTypes)
+models.Token           = require('./token')(sequelize, DataTypes)
+models.Company         = require('./company')(sequelize, DataTypes)
+models.Phone           = require('./phone')(sequelize, DataTypes)
 models.Timesheet       = require('./timesheet')(sequelize, DataTypes)
 models.SingleTimesheet = require('./singleTimesheet')(sequelize, DataTypes)
+models.Payment         = require('./payment')(sequelize, DataTypes)
 
 module.exports = models

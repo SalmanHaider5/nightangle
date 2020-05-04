@@ -9,7 +9,7 @@ module.exports  = (sequelize, types) => {
             primaryKey: true
         },
         date: {
-            type: DATE
+            type: STRING
         },
         shift: {
             type: STRING
