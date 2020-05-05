@@ -1,7 +1,7 @@
 const { tables: { payment } } = require('../constants')
 
 module.exports  = (sequelize, types) => {
-    const { INTEGER, STRING, BOOLEAN } = types
+    const { INTEGER, STRING, BOOLEAN, DATEONLY } = types
     return sequelize.define(payment, {
         id: {
             type: INTEGER,
@@ -12,7 +12,7 @@ module.exports  = (sequelize, types) => {
             type: STRING
         },
         payDate: {
-            type: STRING
+            type: DATEONLY
         },
         status: {
             type: BOOLEAN,

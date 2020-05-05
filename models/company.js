@@ -46,8 +46,7 @@ module.exports  = (sequelize, types) => {
             allowNull: false
         },
         registration: {
-            type: INTEGER,
-            allowNull: false
+            type: STRING
         },
         charity: {
             type: BOOLEAN

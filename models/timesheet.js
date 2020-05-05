@@ -1,7 +1,11 @@
+const moment = require('moment')
+require('moment/locale/en-gb') 
+moment.locale('en-gb')
+
 const { tables: { timesheet } } = require('../constants')
 
 module.exports  = (sequelize, types) => {
-    const { INTEGER, DATE } = types
+    const { INTEGER, DATEONLY } = types
     return sequelize.define(timesheet, {
         id: {
             type: INTEGER,
@@ -9,10 +13,10 @@ module.exports  = (sequelize, types) => {
             primaryKey: true
         },
         startingDay: {
-            type: DATE
+            type: DATEONLY
         },
         endingDay: {
-            type: DATE
+            type: DATEONLY
         },
         userId: {
             type: INTEGER

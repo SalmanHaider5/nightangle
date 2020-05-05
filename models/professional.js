@@ -1,7 +1,7 @@
 const { tables: { professional } } = require('../constants')
 
 module.exports  = (sequelize, types) => {
-    const { INTEGER, STRING, BOOLEAN, DATE } = types
+    const { INTEGER, STRING, BOOLEAN, DATEONLY } = types
     const Professional =  sequelize.define(professional, {
         id: {
             type: INTEGER,
@@ -19,7 +19,7 @@ module.exports  = (sequelize, types) => {
             allowNull: false
         },
         dateOfBirth: {
-            type: DATE,
+            type: DATEONLY,
             allowNull: false
         },
         postCode: {

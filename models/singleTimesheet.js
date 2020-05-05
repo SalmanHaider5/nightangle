@@ -1,7 +1,7 @@
 const { tables: { singleTimesheet } } = require('../constants')
 
 module.exports  = (sequelize, types) => {
-    const { INTEGER, STRING, DATE, BOOLEAN } = types
+    const { INTEGER, STRING, DATEONLY, BOOLEAN } = types
     return sequelize.define(singleTimesheet, {
         id: {
             type: INTEGER,
@@ -9,7 +9,7 @@ module.exports  = (sequelize, types) => {
             primaryKey: true
         },
         date: {
-            type: STRING
+            type: DATEONLY
         },
         shift: {
             type: STRING
