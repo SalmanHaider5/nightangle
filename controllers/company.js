@@ -21,7 +21,8 @@ const {
         paymentReceived
     },
     stripeCredentials: {
-        amount
+        amount,
+        vatPercent
     }
 } = require('../constants')
 
@@ -32,6 +33,7 @@ exports.add = (req, res) => {
     const payment = {}
     payment.balance = amount
     payment.payDate = ''
+    payment.vat = vatPercent
     payment.status = false
     payment.userId = userId
     Company.create(company)
@@ -123,6 +125,7 @@ exports.getCompanyDetails = (req, res) => {
                     company.isVerified = user.isVerified
                     company.isPaid = false
                     company.balance = amount
+                    company.vat = vatPercent
                     company.payDate = ''
                     res.json({ code: info, response: { title: 'Profile Verified', message: addRecord }, company })   
                 }else{
@@ -131,15 +134,17 @@ exports.getCompanyDetails = (req, res) => {
                     Payment.findOne({ where: { userId } })
                     .then((payment) => {
                         if(payment){
-                            const { dataValues: { status, payDate, balance } } = payment
+                            const { dataValues: { status, payDate, balance, vat } } = payment
                             company.dataValues.isPaid = status
                             company.dataValues.payDate = payDate
                             company.dataValues.balance = balance
+                            company.dataValues.vat = vat
                             res.json({ code: success, response: { title: 'Record Found', message: recordFound }, company })
                         }else{
                             company.dataValues.isPaid = false
                             company.dataValues.balance = amount
                             company.dataValues.payDate = ''
+                            company.dataValues.vat = vatPercent
                             res.json({ code: success, response: { title: 'Record Found', message: recordFound }, company })
                         }
                     })

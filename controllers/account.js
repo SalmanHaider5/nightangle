@@ -472,8 +472,8 @@ exports.verifyToken = (req, res, next) => {
         res.json({
             code: error,
             response: {
-                title: 'Error',
-                message: generalErrorMessage
+                title: 'Authorization Failed',
+                message: tokenInvalid
             }
         })
     }

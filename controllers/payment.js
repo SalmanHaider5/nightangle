@@ -3,6 +3,7 @@ const {
         secretKey,
         currency,
         amount,
+        vatPercent,
         paymentIntentId
     },
     responseMessages: {
@@ -18,8 +19,10 @@ const {
 const stripe  = require('stripe')(secretKey)
 
 exports.createClientSecret = (req, res) => {
+    const vatBalance = parseInt(amount) * parseInt(vatPercent)/100
+    const netAmount = parseInt(vatBalance) + parseInt(amount)
     stripe.paymentIntents.create({
-        amount,
+        amount: netAmount,
         currency,
         payment_method_types: ['card']
     }, (err, intent) => {

@@ -79,6 +79,7 @@ module.exports = {
     stripeCredentials: {
         secretKey: 'sk_test_1CKG3l4djbNIKfpHOD3Yrs3o00s2auBOs1',
         amount: '480',
+        vatPercent: '20',
         currency: 'gbp',
         paymentIntentId: 'pi_1Gb3gdHrrJ26Tytgj2IdeMq4'
     }

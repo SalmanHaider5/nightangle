@@ -11,6 +11,9 @@ module.exports  = (sequelize, types) => {
         balance: {
             type: STRING
         },
+        vat: {
+            type: STRING
+        },
         payDate: {
             type: DATEONLY
         },
