@@ -4,7 +4,8 @@ const cors                 = require('cors')
 const multer               = require('multer')
 const app                  = express()
 const models               = require('./models')
-const PORT                 = process.env.PORT || 8080
+// const PORT                 = process.env.PORT || 8080
+const PORT                 = process.env.PORT || 1000
 
 app.use(json())
 app.use(cors())
@@ -23,15 +24,14 @@ const publicUpload = multer.diskStorage({
 const upload = multer({ storage: publicUpload })
 var fileUpload = upload.fields([
     { name: 'profilePicture', maxCount: 1 },
-    { name: 'document', maxCount: 1 },
-    { name: 'crbDocument', maxCount: 1 }
+    { name: 'document', maxCount: 1 }
 ])
 
 const { signup, verify, login, verifyToken, sendPasswordResetLink, resetPassword, verifyLogin }                      = require('./controllers/account')
 const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, deleteTimesheet, updateProfessionalSecurityDetails, updateTimesheetShift, addTimesheet, getTimesheets, getSingletimesheet, updateShiftStatus }   = require('./controllers/professional')
 const { add, getCompanyDetails, changePassword, updateCompany, searchProfessionals, searchTimesheets, filterProfessionalsByShift, makePayment }           = require('./controllers/company')
 const { sendMessage } = require('./controllers/contact')
-const { createClientSecret } = require('./controllers/payment')
+const { createClientSecret, getPaypalClientToken } = require('./controllers/payment')
 
 models.sequelize.sync();
 
@@ -64,6 +64,7 @@ app.get('/timesheets/:professionalId', verifyToken, searchTimesheets)
 app.get('/timesheet/:timesheetId/search', verifyToken, filterProfessionalsByShift)
 app.post('/company/:userId/payment', verifyToken, makePayment)
 app.get('/company/clientSecret', verifyToken, createClientSecret)
+app.get('/company/paypalToken/:userId', verifyToken, getPaypalClientToken)
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)

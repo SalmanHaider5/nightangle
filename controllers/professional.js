@@ -43,9 +43,6 @@ exports.create = (req, res) => {
     if(files && files.profilePicture){
         body.profilePicture = req.files.profilePicture[0].filename
     }
-    if(files && files.crbDocument){
-        body.crbDocument = req.files.crbDocument[0].filename
-    }
     const professional = body
     professional.userId = userId
     Professional.create(professional)
@@ -64,9 +61,6 @@ exports.updateProfessional = (req, res) => {
     }
     if(files && files.profilePicture){
         body.profilePicture = req.files.profilePicture[0].filename
-    }
-    if(files && files.crbDocument){
-        body.crbDocument = req.files.crbDocument[0].filename
     }
     Professional.findOne({ where: { userId } })
     .then(professional => {

@@ -1,8 +1,10 @@
 
 module.exports = {
 
-    hostUrl: 'https://intelligent-innovation.herokuapp.com/',
-    appUrl: 'https://nmcregistered.org.uk/',
+    // hostUrl: 'https://intelligent-innovation.herokuapp.com/',
+    hostUrl: 'http://localhost:1000/',
+    appUrl: 'http://localhost:3005/',
+    // appUrl: 'https://nmcregistered.org.uk/',
     signupSecret: 'nightingale',
     tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
@@ -78,9 +80,14 @@ module.exports = {
 
     stripeCredentials: {
         secretKey: 'sk_test_1CKG3l4djbNIKfpHOD3Yrs3o00s2auBOs1',
-        amount: '480',
+        amount: '495',
         vatPercent: '20',
         currency: 'gbp',
         paymentIntentId: 'pi_1Gb3gdHrrJ26Tytgj2IdeMq4'
+    },
+    braintreeCredentials: {
+        merchantId: 'wm733scpkh998vsc',
+        publicKey: 'jj7zg2csp5ppmj25',
+        privateKey: '3918d7f4464c74cbcaab666ea568c402'
     }
 }
