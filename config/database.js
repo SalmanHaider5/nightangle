@@ -11,4 +11,4 @@ module.exports = {
 //     PASSWORD: '',
 //     DB: 'nightingale',
 //     DIALECT: 'mysql'
-}
+// }
