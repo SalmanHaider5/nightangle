@@ -17,5 +17,7 @@ models.Phone           = require('./phone')(sequelize, DataTypes)
 models.Timesheet       = require('./timesheet')(sequelize, DataTypes)
 models.SingleTimesheet = require('./singleTimesheet')(sequelize, DataTypes)
 models.Payment         = require('./payment')(sequelize, DataTypes)
+models.BankDetails     = require('./bankDetails')(sequelize, DataTypes)
+models.Offer           = require('./offers')(sequelize, DataTypes)
 
 module.exports = models

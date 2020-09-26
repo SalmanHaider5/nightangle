@@ -1,7 +1,7 @@
 const { hashSync, compareSync }      = require('bcryptjs')
 const moment                         = require('moment')
 const randomize                      = require('randomatic')
-const { Professional, User, Phone, Timesheet, SingleTimesheet }  = require('../models')
+const { Professional, User, Phone, Timesheet, SingleTimesheet, BankDetails }  = require('../models')
 const SendMessage                    = require('../config/message')
 
 const {
@@ -29,9 +29,12 @@ const {
         timesheetsFound,
         shiftStatusChanged,
         shiftChanged,
-        timesheetDeleted
+        timesheetDeleted,
+        bankDetailsRequired,
+        bankDetailsAdded
     }
 } = require('../constants')
+const bankDetails = require('../models/bankDetails')
 
 
 exports.create = (req, res) => {
@@ -359,10 +362,12 @@ exports.getProfessionalDetails = (req, res) => {
                         if(phone === null){
                             professional.phone = ''
                             professional.phoneStatus = false
+                            professional.bankDetails = {}
                             res.json({ code: info, response: { title: 'Phone Verification', message: phoneVerification }, professional })
                         }else{
                             professional.phone = phone.dataValues.phone
                             professional.phoneStatus = phone.dataValues.status
+                            professional.dataValues.bankDetails = {}
                             res.json({ code: info, response: { title: 'Email Verified', message: addRecord }, professional })
                         }
                     })   
@@ -373,7 +378,16 @@ exports.getProfessionalDetails = (req, res) => {
                     .then(contact => {
                         professional.dataValues.phone = contact.dataValues.phone
                         professional.dataValues.phoneStatus = contact.dataValues.status
-                        res.json({ code: success, response: { title: 'Record Found', message: recordFound }, professional })
+                        BankDetails.findOne({ where: { userId } })
+                        .then(bankDetails => {
+                            if(bankDetails){
+                                professional.dataValues.bankDetails = bankDetails
+                                res.json({ code: success, response: { title: 'Perfect Profile', message: recordFound }, professional })
+                            }else{
+                                professional.dataValues.bankDetails = {}
+                                res.json({ code: info, response: { title: 'Bank Details', message: bankDetailsRequired }, professional })
+                            }
+                        })
                     })
                 }
             })
@@ -566,3 +580,102 @@ exports.deleteTimesheet = (req, res) => {
         })
     })
 } 
+
+exports.addBankDetails = (req, res) => {
+    const { params: { userId } } = req
+    let { body } = req
+    body.userId = userId
+    console.log('Body', body)
+    User.findOne({ where: { id: userId } })
+    .then(user => {
+        if(user){
+            BankDetails.create(body)
+            .then(() => {
+                res.json({
+                    code: success,
+                    response: {
+                        title: 'Bank Details Added',
+                        message: bankDetailsAdded
+                    }
+                })
+            })
+            .catch(err => {
+                console.log('Error 2', err)
+                res.json({
+                    code: error,
+                    response: {
+                        title: 'Error',
+                        message: generalErrorMessage
+                    },
+                    error: err
+                })
+            })
+        }else{
+            res.json({
+                code: error,
+                response: {
+                    title: 'Invalid User',
+                    message: generalErrorMessage
+                }
+            })
+        }
+    })
+    .catch(err => {
+        console.log('Error 1', err)
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
+        })
+    })
+}
+
+exports.updatedBankDetails = (req, res) => {
+    const { params: { userId }, body } = req
+    BankDetails.findOne({ where: { userId } })
+    .then(model => {
+        if(model){
+            BankDetails.update(body, { where: { userId } })
+            .then(() => {
+                res.json({
+                    code: success,
+                    response: {
+                        title: 'Bank Details Updated',
+                        message: profileUpdated
+                    }
+                })
+            })
+            .catch(err => {
+                res.json({
+                    code: error,
+                    response: {
+                        title: 'Error',
+                        message: generalErrorMessage
+                    },
+                    error: err
+                })
+            })
+        }else{
+            res.json({
+                code: error,
+                response: {
+                    title: 'User not Found',
+                    message: generalErrorMessage
+                }
+            })
+        }
+    })
+    .catch(err => {
+        res.json({
+            code: error,
+            response: {
+                title: 'Error',
+                message: generalErrorMessage
+            },
+            error: err
+        })
+    })
+}

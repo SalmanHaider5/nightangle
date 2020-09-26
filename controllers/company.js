@@ -1,6 +1,7 @@
 const { hashSync, compareSync }      = require('bcryptjs')
 const moment                         = require('moment')
-const { Company, User, Professional, Timesheet, SingleTimesheet, Payment, Phone }        = require('../models')
+const { Op }                         = require('sequelize')
+const { Company, User, Professional, Timesheet, SingleTimesheet, Payment, Phone, Offer }        = require('../models')
 
 const {
     codes:{
@@ -127,6 +128,7 @@ exports.getCompanyDetails = (req, res) => {
                     company.balance = amount
                     company.vat = vatPercent
                     company.payDate = ''
+                    company.offers = {}
                     res.json({ code: info, response: { title: 'Profile Verified', message: addRecord }, company })   
                 }else{
                     company.dataValues.email = user.email
@@ -139,13 +141,41 @@ exports.getCompanyDetails = (req, res) => {
                             company.dataValues.payDate = payDate
                             company.dataValues.balance = balance
                             company.dataValues.vat = vat
-                            res.json({ code: success, response: { title: 'Record Found', message: recordFound }, company })
+                            Offer.findAll({ where: { company: userId } })
+                            .then(offers => {
+                                company.dataValues.offers = offers
+                                res.json({ code: success, response: { title: 'Record Found', message: recordFound }, company })
+                            })
+                            .catch(err=> {
+                                res.json({
+                                    code: error,
+                                    response: {
+                                        title: 'Error',
+                                        message: generalErrorMessage
+                                    },
+                                    error: err
+                                })
+                            })
                         }else{
                             company.dataValues.isPaid = false
                             company.dataValues.balance = amount
                             company.dataValues.payDate = ''
                             company.dataValues.vat = vatPercent
-                            res.json({ code: success, response: { title: 'Record Found', message: recordFound }, company })
+                            Offer.findAll({ where: { company: userId } })
+                            .then(offers => {
+                                company.dataValues.offers = offers
+                                res.json({ code: success, response: { title: 'Record Found', message: recordFound }, company })
+                            })
+                            .catch(err=> {
+                                res.json({
+                                    code: error,
+                                    response: {
+                                        title: 'Error',
+                                        message: generalErrorMessage
+                                    },
+                                    error: err
+                                })
+                            })
                         }
                     })
                     .catch(err=> {
@@ -230,13 +260,23 @@ exports.searchProfessionals = (req, res) => {
             Payment.findOne({  where: { userId, status: true } })
             .then(company=> {
                 if(company){
-                    Professional.findAll({ where: { qualification: skill } })
-                    .then(professionals=> {
-                        res.json({
-                            code: success,
-                            professionals
+                    if(skill === 'allSkills'){
+                        Professional.findAll()
+                        .then(professionals=> {
+                            res.json({
+                                code: success,
+                                professionals
+                            })
                         })
-                    })
+                    }else{
+                        Professional.findAll({ where: { qualification: skill } })
+                        .then(professionals=> {
+                            res.json({
+                                code: success,
+                                professionals
+                            })
+                        })
+                    }
                 }else{
                     res.json({
                         code: error,
@@ -291,8 +331,10 @@ exports.searchTimesheets = (req, res) => {
 }
 
 exports.filterProfessionalsByShift = (req, res) => {
-    const { params: { timesheetId }, query: { shift, date } } = req
-    SingleTimesheet.findOne({ where: { timesheetId, shift, date } })
+    const { params: { timesheetId }, query: { shifts, date } } = req
+    SingleTimesheet.findOne({ where: { timesheetId, date, status: 1, shift: {
+        [Op.or]: [shifts.split(',')]
+    } } })
     .then(timesheet => {
         res.json({
             code: success,

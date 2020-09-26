@@ -1,10 +1,11 @@
 
 module.exports = {
 
-    hostUrl: 'https://intelligent-innovation.herokuapp.com/',
-    // hostUrl: 'http://localhost:1000/',
-    // appUrl: 'http://localhost:3005/',
-    appUrl: 'https://nmcregistered.org.uk/',
+    // hostUrl: 'https://intelligent-innovation.herokuapp.com/',
+    // hostUrl: 'https://server.nmcregistered.org.uk/server/',
+    hostUrl: 'http://localhost:1000/',
+    appUrl: 'http://localhost:3005/',
+    // appUrl: 'https://nmcregistered.org.uk/',
     signupSecret: 'nightingale',
     tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
@@ -48,7 +49,10 @@ module.exports = {
         messageSent: 'Your message has been delivered. You will be reached soon',
         accessDenied: 'You are not authorized to perform this action',
         secretRetrieved: 'Payment Secret has been retrieved successfully',
-        paymentReceived: 'Your payment has been received.'
+        paymentReceived: 'Your payment has been received.',
+        bankDetailsRequired: 'Please add your bank details',
+        bankDetailsAdded: 'Bank details has been successfully added',
+        offerSent: 'Your offer request has been sent to professional'
     },
 
     emailCredentials: {
@@ -75,7 +79,9 @@ module.exports = {
         phone: 'phone',
         timesheet: 'timesheet',
         singleTimesheet: 'singleTimesheet',
-        payment: 'payment'
+        payment: 'payment',
+        offer: 'offer',
+        bankDetails: 'bankDetail'
     },
 
     stripeCredentials: {
