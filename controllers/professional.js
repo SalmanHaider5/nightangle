@@ -1,7 +1,8 @@
 const { hashSync, compareSync }      = require('bcryptjs')
 const moment                         = require('moment')
 const randomize                      = require('randomatic')
-const { Professional, User, Phone, Timesheet, SingleTimesheet, BankDetails }  = require('../models')
+const { QueryTypes }             = require('sequelize')
+const { Professional, User, Phone, Timesheet, SingleTimesheet, BankDetails, sequelize }  = require('../models')
 const SendMessage                    = require('../config/message')
 
 const {
@@ -382,7 +383,13 @@ exports.getProfessionalDetails = (req, res) => {
                         .then(bankDetails => {
                             if(bankDetails){
                                 professional.dataValues.bankDetails = bankDetails
-                                res.json({ code: success, response: { title: 'Perfect Profile', message: recordFound }, professional })
+                                sequelize.query('SELECT offers.id, offers.company, (SELECT firstName from companies WHERE userId=offers.company) as companyFirstName, (SELECT lastName from companies WHERE userId=offers.company) as companyLastName, offers.shiftRate, offers.shifts, address, offers.message, offers.status FROM offers WHERE professional='+userId, {
+                                    type: QueryTypes.SELECT
+                                })
+                                .then(offers => {
+                                    professional.dataValues.offers = offers
+                                    res.json({ code: success, response: { title: 'Perfect Profile', message: recordFound }, professional })
+                                })
                             }else{
                                 professional.dataValues.bankDetails = {}
                                 res.json({ code: info, response: { title: 'Bank Details', message: bankDetailsRequired }, professional })

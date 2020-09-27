@@ -32,7 +32,7 @@ const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessiona
 const { add, getCompanyDetails, changePassword, updateCompany, searchProfessionals, searchTimesheets, filterProfessionalsByShift, makePayment }           = require('./controllers/company')
 const { sendMessage } = require('./controllers/contact')
 const { createClientSecret, getPaypalClientToken } = require('./controllers/payment')
-const { createOffer } = require('./controllers/offers')
+const { createOffer, updateOffer } = require('./controllers/offers')
 
 models.sequelize.sync();
 
@@ -69,6 +69,7 @@ app.get('/api/company/paypalToken/:userId', verifyToken, getPaypalClientToken)
 app.post('/api/professional/:userId/bankDetails', verifyToken, addBankDetails)
 app.put('/api/professional/:userId/bankDetails', verifyToken, updatedBankDetails)
 app.post('/api/createOffer', verifyToken, createOffer)
+app.put('/api/offer/:offerId', verifyToken, updateOffer)
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)

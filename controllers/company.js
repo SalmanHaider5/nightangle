@@ -1,7 +1,7 @@
 const { hashSync, compareSync }      = require('bcryptjs')
 const moment                         = require('moment')
-const { Op }                         = require('sequelize')
-const { Company, User, Professional, Timesheet, SingleTimesheet, Payment, Phone, Offer }        = require('../models')
+const { Op, QueryTypes }             = require('sequelize')
+const { Company, User, Professional, Timesheet, SingleTimesheet, Payment, Phone, Offer, sequelize }        = require('../models')
 
 const {
     codes:{
@@ -141,7 +141,9 @@ exports.getCompanyDetails = (req, res) => {
                             company.dataValues.payDate = payDate
                             company.dataValues.balance = balance
                             company.dataValues.vat = vat
-                            Offer.findAll({ where: { company: userId } })
+                            sequelize.query('SELECT offers.id, offers.professional, (SELECT fullName from professionals WHERE userId=offers.professional) as professionalName, (SELECT nmcPin from professionals WHERE userId=offers.professional) as professionalNmc, offers.shiftRate, offers.shifts, offers.message, offers.status FROM offers WHERE company='+userId, {
+                                type: QueryTypes.SELECT
+                            })
                             .then(offers => {
                                 company.dataValues.offers = offers
                                 res.json({ code: success, response: { title: 'Record Found', message: recordFound }, company })
@@ -161,7 +163,9 @@ exports.getCompanyDetails = (req, res) => {
                             company.dataValues.balance = amount
                             company.dataValues.payDate = ''
                             company.dataValues.vat = vatPercent
-                            Offer.findAll({ where: { company: userId } })
+                            sequelize.query('SELECT offers.id, offers.professional, (SELECT fullName from professionals WHERE userId=offers.professional) as professionalName, (SELECT nmcPin from professionals WHERE userId=offers.professional) as professionalNmc, offers.shiftRate, offers.shifts, offers.message, offers.status FROM offers WHERE company='+userId, {
+                                type: QueryTypes.SELECT
+                            })
                             .then(offers => {
                                 company.dataValues.offers = offers
                                 res.json({ code: success, response: { title: 'Record Found', message: recordFound }, company })

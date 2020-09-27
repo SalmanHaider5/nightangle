@@ -52,7 +52,9 @@ module.exports = {
         paymentReceived: 'Your payment has been received.',
         bankDetailsRequired: 'Please add your bank details',
         bankDetailsAdded: 'Bank details has been successfully added',
-        offerSent: 'Your offer request has been sent to professional'
+        offerSent: 'Your offer request has been sent to professional',
+        offerAccepted: 'You have successfully accepted this offer',
+        offerDeclined: 'You have successfully declined this offer'
     },
 
     emailCredentials: {
