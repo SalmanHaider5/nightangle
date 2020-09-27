@@ -49,8 +49,10 @@ exports.createOffer = (req, res) => {
 exports.updateOffer = (req, res) => {
     const { body, params: { offerId } } = req
     const { status, professional } = body
+    console.log('Body', body)
     Offer.update(body, { where: { id: offerId } })
-    .then(() => {
+    .then(offer => {
+        console.log(offer)
         Phone.findOne({ where: { userId: professional } })
         .then(model => {
             const { dataValues: { phone } } = model
@@ -68,6 +70,7 @@ exports.updateOffer = (req, res) => {
 
         })
         .catch(err => {
+            console.log('Error', err)
             res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
         })
         
