@@ -256,19 +256,22 @@ exports.login = (req, res) => {
                     if(role === 'company'){
                         Company.findOne({ where: { userId: id } })
                         .then(company => {
-                            const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
-                            res.json({
-                                code: 'success',
-                                response: {
-                                    title: 'Login Success',
-                                    message: loginSuccess
-                                },
-                                userId: id,
-                                role,
-                                token: authToken
-                            })
+                            if(company){
+                                const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
+                                res.json({
+                                    code: 'success',
+                                    response: {
+                                        title: 'Login Success',
+                                        message: loginSuccess
+                                    },
+                                    userId: id,
+                                    role,
+                                    token: authToken
+                                })
+                            }
                         })
                         .catch(err => {
+                            console.log('Test4', err)
                             res.json({
                                 code: error,
                                 response: {
@@ -305,6 +308,7 @@ exports.login = (req, res) => {
                                                 })
                                             })
                                             .catch(err => {
+                                                console.log('Test1', err)
                                                 res.json({
                                                     code: error,
                                                     response: {
@@ -317,6 +321,7 @@ exports.login = (req, res) => {
                                         }
                                     })
                                     .catch(err => {
+                                        console.log('Test2', err)
                                         res.json({
                                             code: error,
                                             response: {
@@ -356,6 +361,7 @@ exports.login = (req, res) => {
                             }
                         })
                         .catch(err => {
+                            console.log('Test3', err)
                             res.json({
                                 code: error,
                                 response: {
@@ -387,6 +393,7 @@ exports.login = (req, res) => {
         }
     })
     .catch(err => {
+        console.log('Test', err)
         res.json({
             code: error,
             response:{

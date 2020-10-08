@@ -45,6 +45,10 @@ module.exports  = (sequelize, types) => {
             type: STRING,
             allowNull: false
         },
+        paymentCycle: {
+            type: STRING,
+            allowNull: false
+        },
         registration: {
             type: STRING
         },

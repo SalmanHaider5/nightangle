@@ -49,7 +49,6 @@ exports.createOffer = (req, res) => {
 exports.updateOffer = (req, res) => {
     const { body, params: { offerId } } = req
     const { status, professional } = body
-    console.log('Body', body)
     Offer.update(body, { where: { id: offerId } })
     .then(offer => {
         console.log(offer)
@@ -57,7 +56,7 @@ exports.updateOffer = (req, res) => {
         .then(model => {
             const { dataValues: { phone } } = model
             const acceptedMsg = `Hello, Congratulation! Your offer request has been accepted by NMC Registered Professional`
-            const declinedMsg = `Hello, We are sorry! You offer request has been declined by NMC Registered Professional`
+            const declinedMsg = `Hello, We are sorry! NMC Registered Professional is not available`
             const message = status === 'accepted' ? acceptedMsg : declinedMsg
             SendMessage(phone, message)
             res.json({

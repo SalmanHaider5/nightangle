@@ -368,7 +368,7 @@ exports.getProfessionalDetails = (req, res) => {
                         }else{
                             professional.phone = phone.dataValues.phone
                             professional.phoneStatus = phone.dataValues.status
-                            professional.dataValues.bankDetails = {}
+                            professional.bankDetails = {}
                             res.json({ code: info, response: { title: 'Email Verified', message: addRecord }, professional })
                         }
                     })   
@@ -415,7 +415,7 @@ exports.addTimesheet = (req, res) => {
             SingleTimesheet.create(singleTimesheet[i])
             .then(data => {
                 schedule.push(data)
-                if(i === singleTimesheet.length - 1){
+                if(schedule.length === singleTimesheet.length){
                     res.json({
                         code: success,
                         response: {
