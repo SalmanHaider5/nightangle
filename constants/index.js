@@ -2,10 +2,10 @@
 module.exports = {
 
     // hostUrl: 'https://intelligent-innovation.herokuapp.com/',
-    hostUrl: 'https://server.nmcregistered.org.uk/server/',
-    // hostUrl: 'http://localhost:1000/',
-    // appUrl: 'http://localhost:3005/',
-    appUrl: 'https://nmcregistered.org.uk/',
+    // hostUrl: 'https://server.nmcregistered.org.uk/server/',
+    hostUrl: 'http://localhost:1000/',
+    appUrl: 'http://localhost:8080/',
+    // appUrl: 'https://nmcregistered.org.uk/',
     signupSecret: 'nightingale',
     tokenExpiration: 12000, // In Seconds
     linkExpiration: 20, // In minutes
@@ -54,7 +54,9 @@ module.exports = {
         bankDetailsAdded: 'Bank details has been successfully added',
         offerSent: 'Your offer request has been sent to professional',
         offerAccepted: 'You have successfully accepted this offer',
-        offerDeclined: 'You have successfully declined this offer'
+        offerDeclined: 'You have successfully declined this offer',
+        offerApproved: 'You have successfully approved this offer',
+        offerRejected: 'You have successfully rejected this offer'
     },
 
     emailCredentials: {

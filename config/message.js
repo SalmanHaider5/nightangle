@@ -2,7 +2,7 @@ const { messages } = require('messagebird')('9qfC0goJbovHuSjqO8V1UK5OH')
 
 module.exports = (user, message) => {
     const params = {
-        originator: 'Nightingale',
+        originator: 'NMC Reg Text',
         recipients: [
             user
         ],

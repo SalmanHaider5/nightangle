@@ -41,11 +41,8 @@ const bankDetails = require('../models/bankDetails')
 exports.create = (req, res) => {
     const { params: { userId }, files } = req
     let { body } = req
-    if(files && files.document){
-        body.document = req.files.document[0].filename
-    }
     if(files && files.profilePicture){
-        body.profilePicture = req.files.profilePicture[0].filename
+        body.profilePicture = files.profilePicture[0].filename
     }
     const professional = body
     professional.userId = userId
@@ -383,7 +380,7 @@ exports.getProfessionalDetails = (req, res) => {
                         .then(bankDetails => {
                             if(bankDetails){
                                 professional.dataValues.bankDetails = bankDetails
-                                sequelize.query('SELECT offers.id, offers.company, (SELECT firstName from companies WHERE userId=offers.company) as companyFirstName, (SELECT lastName from companies WHERE userId=offers.company) as companyLastName, offers.shiftRate, offers.shifts, address, offers.message, offers.status FROM offers WHERE professional='+userId, {
+                                sequelize.query('SELECT offers.id, offers.company, (SELECT organization from companies WHERE userId=offers.company) as companyName, offers.shiftRate, offers.shifts, address, offers.message, offers.status FROM offers WHERE professional='+userId, {
                                     type: QueryTypes.SELECT
                                 })
                                 .then(offers => {
