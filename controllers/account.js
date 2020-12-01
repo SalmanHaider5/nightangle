@@ -1,21 +1,35 @@
-const { hashSync, compareSync }                     = require('bcryptjs')
-const { sign, verify }                              = require('jsonwebtoken')
-const moment                                        = require('moment')
-const randomize                                     = require('randomatic')
-const { User, Token, Professional, Company, Phone } = require('../models')
-const SendEmail                                     = require('../config/email')
-const SendMessage                                   = require('../config/message')
+const { verify }  = require('jsonwebtoken')
+const SendEmail   = require('../config/email')
+const SendMessage = require('../config/message')
 
 const {
-    appUrl,
+    User,
+    Token,
+    Professional,
+    Phone,
+    Payment
+} = require('../models')
+
+const {
+    getResponse,
+    getGeneralErrorMessage,
+    getEmailContent,
+    getUserToken,
+    getUserData,
+    isActivationLinkExpired,
+    isPasswordValid,
+    getBasicProfessionalData,
+    getRandomCode,
+    getBasicCompanyData,
+    getHashedPassword,
+    getPasswordSuccessEmailContent
+} = require('./helpers')
+
+const {
     signupSecret,
-    tokenExpiration,
-    codeExpiration,
-    linkExpiration,
     responseMessages: {
         alreadyRegistered,
         emailSent,
-        generalErrorMessage,
         linkExpired,
         alreadyVerified,
         linkBroken,
@@ -24,7 +38,6 @@ const {
         userNotVerified,
         invalidPassword,
         loginSuccess,
-        phoneAdded,
         codeExpired,
         tokenInvalid,
         passwordResetLinkSent,
@@ -35,493 +48,215 @@ const {
         error,
         success,
         info
-    },
-    emailCredentials: {
-        emailVerificationSubject,
-        emailVerificationMessage,
-        resetPasswordMessage,
-        resetPasswordSubject
     }
 }  = require('../constants')
-const professional = require('../models/professional')
-
-const getProfessionalMailContent = (link, role) => {
-    const companyContent = `<div style="background: #f6f5ff; margin: 10 auto; border: 1px dashed #9795ff; width: 90%;">
-    <h2 style="color: #0b1586; margin-left: 30px;">
-      Welcome to NMC Registered
-    </h2>
-    <div style="width: 95%; margin: 0 auto;">
-      <p>
-        If you’re running a Care home, Nursing home or you’re a Director of Nursing for a NHS Trust then…
-      </p>
-      <p>
-        Welcome to NMC Registered the intelligent innovative way to source NMC Professionals. An licence purchase covers your shift needs for the whole year without the need to pay any agency fees.
-      </p>
-    </div>
-    <h4 style="color: #0b1586; margin-left: 30px;">
-      Top 7 Reasons To Use NMC Registered?
-    </h4>
-    <div style="width: 95%; margin: 0 auto;">
-      <ul>
-        <li>Seamless end to end automated NMC professional sourcing system.</li>
-        <li>10.4 shifts cover all your costs for use of licence, then it's free for the rest of the year if you’re paying £3.97 per hour or above to nursing agencies for 12 hour shifts. </li>
-        <li>Between 2 to 10-minute completion ratio from sourcing the professional to receiving acceptance of the shift.</li>
-        <li>No restrictions on employing professionals full-time or part-time sourced through NMC Registered, unlike many nursing agencies.</li>
-        <li>Total security with NMC professional and DBS certificate verification links.</li>
-        <li>No budget concerns, fixed fee licensing.</li>
-        <li>Use of current pay-cycle mode, no need to adjust pay-cycle run.</li>
-      </ul>
-    </div>
-    <p style="margin-left: 30px;">
-      Please click on this button to begin your registration
-    </p>
-    <div style="width: 100%; text-align: center; margin-bottom: 30px;">
-      <a href="${link}" style="background-color: #1890ff; color: #fff; font-weight: bold; padding: 13px; text-decoration: none; font-family:sans-serif; border: none; cursor: pointer;">Verify your Account</a>
-    </div>
-  </div>`
-  const professionalContent = `<div style="background: #f6f5ff; margin: 10 auto; border: 1px dashed #9795ff; width: 90%;">
-    <h2 style="color: #0b1586; margin-left: 30px;">
-        Welcome to NMC Registered
-    </h2>
-    <div style="width: 95%; margin: 0 auto;">
-        <p>
-        As a registered NMC professional or a nursing associate you have huge responsibilities for the care and 
-        well-being of your patients. Your efforts are paramount in all arenas of the NHS and the private care 
-        sector and as such, deserve recognition. Realising this should mean that the reward for your dedication 
-        and hard work should be reflected both financially and with the respect it warrants. NMC Registered will 
-        ensure both these objectives.
-        </p>
-        <p>
-        No fees are charged for any shifts or work you do. This allows the care provider to offer higher rates of
-        pay directly to the professional. You! Take control of your work schedule. Shifts are sent by text directly
-        to your phone and you decide whether to accept or reject the shift offer. Unlike most agencies there is no
-        pressure to accept the shift, it’s always your choice. No agency fees are charged, the full rate of pay 
-        goes to you. After registration please tell your fellow NMC professionals about our web-service and our ambition
-        to ensure that all NMC professionals get paid the true value for their work.
-        </p>
-    </div>
-    <h4 style="color: #0b1586; margin-left: 30px;">
-        Get paid your true value.
-    </h4>
-    <p style="margin-left: 30px;">
-        Please click on this button to begin your registration
-    </p>
-    <div style="width: 100%; text-align: center; margin-bottom: 30px;">
-        <a href="${link}" style="background-color: #1890ff; color: #fff; font-weight: bold; padding: 13px; text-decoration: none; font-family:Arial, Helvetica, sans-serif; border: none; cursor: pointer;">Verify your Account</a>
-    </div>
-    </div>`
-    return role === 'professional' ? professionalContent: companyContent
-}
 
 exports.signup = (req, res) => {
     const { body: { email, password, role } } = req
     User.findOne({ where: { email } })
     .then(user => {
-        if(user === null){
-            const hashedPassword = hashSync(password, 8)
-            const data = {
-                email: email.trim(),
-                password: hashedPassword,
-                role,
-                isVerified: false
-            }
-            User.create(data)
-            .then(model => {
-                const { id, email } = model
-                const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
-                const tokenData = {
-                    email: email,
-                    token: authToken
-                }
-                Token.create(tokenData)
+        if(user){
+            const { dataValues: { isVerified } } = user
+            if(isVerified){
+                const response = getResponse(info, 'Account Exists', alreadyRegistered)
+                res.json(response)
+            }else{
+                const { dataValues: { role: userRole } } = user
+                const { dataValues: { id } } = user
+                const userToken = getUserToken(email, id)
+                Token.update(userToken, { where: { email } })
                 .then(() => {
-                    const verificationUrl = `${appUrl}${id}/verify/${authToken}`
-                    const verificationEmailContent = getProfessionalMailContent(verificationUrl, role)
-                    SendEmail(email, emailVerificationSubject, verificationEmailContent)
-                    res.json({
-                        code: success,
-                        response: {
-                            title: 'Account Created',
-                            message: emailSent
-                        }
-                    })
+                    const { token } = userToken
+                    const emailData = getEmailContent(id, email, token, role)
+                    SendEmail(emailData)
+                    if(userRole === role){
+                        const response = getResponse(success, 'Email Resent', emailSent)
+                        res.json(response)
+                    }else{
+                        const userData = getUserData(email, password, role)
+                        User.update(userData, { where: { email } })
+                        .then(() => {
+                            const response = getResponse(success, 'Account Created', emailSent)
+                            res.json(response)
+                        })
+                    }
                 })
                 .catch(err => {
-                    res.json({
-                        code: error,
-                        response: {
-                            title: 'Error',
-                            message: generalErrorMessage
-                        },
-                        error: err
-                    })
+                    const response = getGeneralErrorMessage(err)
+                    res.json(response)
+                })
+            }
+        }else{
+            const userData = getUserData(email, password, role)
+            User.create(userData)
+            .then(model => {
+                const { id } = model
+                const userToken = getUserToken(email, id)
+                Token.create(userToken)
+                .then(() => {
+                    const { token } = userToken
+                    const emailData = getEmailContent(id, email, token, role)
+                    const response = getResponse(success, 'Account Created', emailSent)
+                    SendEmail(emailData)
+                    res.json(response)
+                })
+                .catch(err => {
+                    const response = getGeneralErrorMessage(err)
+                    res.json(response)
                 })
             })
             .catch(err => {
-                res.json({
-                    code: error,
-                    response: {
-                        title: 'Error',
-                        message: generalErrorMessage
-                    },
-                    error: err
-                })
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
             })
-        }else{
-            if(user.dataValues.isVerified){
-                res.json({
-                    code: info,
-                    response: {
-                        title: 'Information',
-                        message: alreadyRegistered
-                    }
-                })
-            }else{
-                Token.destroy({ where: { email: user.dataValues.email } })
-                const { id, email } = user.dataValues
-                const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
-                const tokenData = {
-                    email: email,
-                    token: authToken
-                }
-                Token.create(tokenData)
-                const verificationUrl = `${appUrl}${id}/verify/${authToken}`
-                const verificationEmailContent = `${emailVerificationMessage} <a href='${verificationUrl}' target='_blank'>Verify Me</a>`
-                SendEmail(email, emailVerificationSubject, verificationEmailContent)
-                res.json({
-                    code: success,
-                    response: {
-                        title: 'Account Created',
-                        message: emailSent
-                    } 
-                })
-            }
         }
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })      
 }
 
 exports.verify = (req, res) => {
-    const { params: { userId, token } } = req
+    const { params: { userId, token: reqToken } } = req
     User.findOne({ where: { id: userId } })
     .then(user => {
-        if(user === null){
-            res.json({
-                code: error,
-                response: {
-                    title: 'User not Found',
-                    message: generalErrorMessage
-                }
-            })
-        }else{
-            const { dataValues: { isVerified, email } } = user
+        if(user){
+            const { dataValues: { isVerified, email, role } } = user
             if(isVerified){
-                res.json({
-                    code: info,
-                    response: {
-                        title: 'Already Verified',
-                        message: alreadyVerified
-                    }
-                })
+                const response = getResponse(info, 'User already Verified', alreadyVerified)
+                res.json(response)
             }else{
                 Token.findOne({ where: { email } })
                 .then(userToken => {
-                    if(token !== userToken.token){
-                        res.json({
-                            code: error,
-                            response: {
-                                title: 'Link Broken',
-                                message: linkBroken
-                            }
-                        })
-                    }else{
-                        const tokenTime = moment(userToken.updatedAt)
-                        const currentTime = new moment()
-                        const minutes = currentTime.diff(tokenTime, 'minutes')
-                        if(minutes > linkExpiration){
-                            res.json({ code: error, response: { title: 'Link Expired', message: linkExpired } })
+                    const { dataValues: { token, updatedAt } } = userToken
+                    if(token === reqToken){
+                        if(isActivationLinkExpired(updatedAt)){
+                            const response = getResponse(error, 'Activation Expired', linkExpired)
+                            res.json(response)
                         }else{
                             const verifiedUser = {}
                             verifiedUser.isVerified = true
                             User.update(verifiedUser, { where: { id: userId } })
                             .then(() => {
                                 Token.destroy({ where: { email } })
-                                res.json({
-                                    code: success,
-                                    response: {
-                                        title: 'Account Verified',
-                                        message: accountVerified
-                                    },
-                                    token,
-                                    userId: user.id,
-                                    role: user.role
+                                .then(() => {
+                                    const data = { token, userId, role, email }
+                                    const response = getResponse(success, 'Account Verified', accountVerified, data)
+                                    res.json(response)
+                                })
+                                .catch(err => {
+                                    const response = getGeneralErrorMessage(err)
+                                    res.json(response)
                                 })
                             })
                             .catch(err => {
-                                res.json({
-                                    code: error,
-                                    response: {
-                                        title: 'Error',
-                                        message: generalErrorMessage
-                                    },
-                                    error: err
-                                })
+                                const response = getGeneralErrorMessage(err)
+                                res.json(response)
                             })
                         }
+                    }else{
+                        const response = getResponse(error, 'Inavlid Token', linkBroken)
+                        res.json(response)
                     }
                 })
-                .catch(err => {
-                    res.json({
-                        code: error,
-                        response: {
-                            title: 'Error',
-                            message: generalErrorMessage
-                        },
-                        error: err
-                    })
-                })
             }
+        }else{
+            const response = getResponse(error, 'User not Found', userNotFound)
+            res.json(response)
         }
+
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
 exports.login = (req, res) => {
-    const { body: { email, password } } = req
-    User.findOne({ where: { email } })
-    .then(user =>{
-        if(user === null){
-            res.json({
-                code: error,
-                response: {
-                    title: 'Account not Found',
-                    message: userNotFound
+    const { body: { email, password: reqPassword }, user } = req
+    const { dataValues: { id, password, role } } = user
+    if(isPasswordValid(reqPassword, password)){
+        if(role === 'company'){
+            const data = getBasicCompanyData(id, email, role)
+            const response = getResponse(success, 'Login Success', loginSuccess, data)
+            res.json(response)
+        }else if(role === 'professional'){
+            Professional.findOne({ where: { userId: id } })
+            .then(professional => {
+                const { dataValues = {} } = professional || {}
+                const { twoFactorAuthentication } = dataValues
+                if(professional && twoFactorAuthentication){
+                    Phone.findOne({ where: { userId: id } })
+                    .then(userPhone => {
+                        const { dataValues: { phone } } = userPhone
+                        const code = getRandomCode()
+                        const message = `Your verification code is ${code}`
+                        SendMessage(phone, message)
+                        Phone.update({ code }, { where: { userId: id } })
+                        .then(() => {
+                            const data = { userId: id, email, role }
+                            const response = getResponse(info, 'Mobile Verification Required', data)
+                            res.json(response)
+                        })
+                        .catch(err => {
+                            const response = getGeneralErrorMessage(err)
+                            res.json(response)
+                        })
+                    })
+                    .catch(err => {
+                        const response = getGeneralErrorMessage(err)
+                        res.json(response)
+                    })
+                }else{
+                    const data = getBasicProfessionalData(id, email, role)
+                    const response = getResponse(success, 'Login Success', loginSuccess, data)
+                    res.json(response)
                 }
             })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
         }else{
-            const { dataValues: { isVerified, role, id } } = user
-            if(isVerified){
-                const isValid = compareSync(password, user.dataValues.password)
-                if(isValid){
-                    if(role === 'company'){
-                        Company.findOne({ where: { userId: id } })
-                        .then(company => {
-                            if(company){
-                                const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
-                                res.json({
-                                    code: 'success',
-                                    response: {
-                                        title: 'Login Success',
-                                        message: loginSuccess
-                                    },
-                                    userId: id,
-                                    role,
-                                    token: authToken
-                                })
-                            }
-                        })
-                        .catch(err => {
-                            console.log('Test4', err)
-                            res.json({
-                                code: error,
-                                response: {
-                                    title: 'Error',
-                                    message: generalErrorMessage
-                                },
-                                error: err
-                            })
-                        })
-                    }
-                    else if(role === 'professional'){
-                        Professional.findOne({ where: { userId: id } })
-                        .then(professional => {
-                            if(professional){
-                                const { twoFactorAuthentication } = professional
-                                if(twoFactorAuthentication){
-                                    Phone.findOne({ where: { userId: id } })
-                                    .then(userPhone => {
-                                        if(userPhone){
-                                            const code = randomize('0', 6)
-                                            const message = `Your verification code is ${code}`
-                                            SendMessage(userPhone.phone, message)
-                                            Phone.update({ code }, { where: { userId: id } })
-                                            .then(() => {
-                                                res.json({
-                                                    code: info,
-                                                    response: {
-                                                        title: 'Mobile Verification Required',
-                                                        message: phoneAdded
-                                                    },
-                                                    twoFactorAuthenticationEnabled: true,
-                                                    role,
-                                                    userId: id
-                                                })
-                                            })
-                                            .catch(err => {
-                                                console.log('Test1', err)
-                                                res.json({
-                                                    code: error,
-                                                    response: {
-                                                        title: 'Error',
-                                                        message: generalErrorMessage
-                                                    },
-                                                    error: err
-                                                })
-                                            })   
-                                        }
-                                    })
-                                    .catch(err => {
-                                        console.log('Test2', err)
-                                        res.json({
-                                            code: error,
-                                            response: {
-                                                title: 'Error',
-                                                message: generalErrorMessage
-                                            },
-                                            error: err
-                                        })
-                                    })
-                                }else{
-                                    const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
-                                    res.json({
-                                        code: 'success',
-                                        response: {
-                                            title: 'Login Success',
-                                            message: loginSuccess
-                                        },
-                                        userId: id,
-                                        twoFactorAuthentication: false,
-                                        role,
-                                        token: authToken
-                                    })
-                                }
-                            }else{
-                                const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
-                                res.json({
-                                    code: 'success',
-                                    response: {
-                                        title: 'Login Success',
-                                        message: loginSuccess
-                                    },
-                                    userId: id,
-                                    twoFactorAuthentication: false,
-                                    role,
-                                    token: authToken
-                                })
-                            }
-                        })
-                        .catch(err => {
-                            console.log('Test3', err)
-                            res.json({
-                                code: error,
-                                response: {
-                                    title: 'Error',
-                                    message: generalErrorMessage
-                                },
-                                error: err
-                            })
-                        })
-                    }
-                }else{
-                    res.json({
-                        code: error,
-                        response:{
-                            title: 'Invalid Password',
-                            message: invalidPassword
-                        }
-                    })
-                }
-            }else{
-                res.json({
-                    code: error,
-                    response:{
-                        title: 'Account not Verified',
-                        message: userNotVerified
-                    }
-                })
-            }
+            const response = getGeneralErrorMessage({})
+            res.json(response)
         }
-    })
-    .catch(err => {
-        console.log('Test', err)
-        res.json({
-            code: error,
-            response:{
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
-    })
+    }else{
+        const response = getResponse(error, 'Invalid Password', invalidPassword)
+        res.json(response)
+    }
 }
 
 exports.verifyLogin = (req, res) => {
-    const { body: { professionalId, code } } = req
+    const { body: { professionalId, code: reqCode }, user } = req
     Phone.findOne({ where: { userId: professionalId } })
     .then(phone => {
-        if(phone.code === code){
-            const codeTime = moment(phone.updatedAt)
-            const currentTime = new moment()
-            const minutes = currentTime.diff(codeTime, 'minutes')
-            if(minutes > codeExpiration){
-                res.json({
-                    code: error,
-                    response: {
-                        title: 'Code Expired',
-                        message: codeExpired
-                    }
-                })
+        if(phone){
+            const { code = '', updatedAt, phone: userPhone } = phone
+            if(code === reqCode){
+                const isCodeExpired = isActivationLinkExpired(updatedAt, 'code')
+                if(isCodeExpired){
+                    const response = getResponse(error, 'Code Expired', codeExpired)
+                    res.json(response)
+                }else{
+                    const { dataValues: { email, role } } = user
+                    const data = getBasicProfessionalData(professionalId, email, role, userPhone, true)
+                    const response = getResponse(success, 'Login Success', loginSuccess, data)
+                    res.json(response)
+                }
             }else{
-                const authToken = sign({ id: professionalId }, signupSecret, { expiresIn: tokenExpiration })
-                res.json({
-                    code: 'success',
-                    response: {
-                        title: 'Login Success',
-                        message: loginSuccess
-                    },
-                    token: authToken,
-                    userId: professionalId,
-                    role: 'professional'
-                })
+                const response = getResponse(error, 'Invalid Code', falseCode)
+                res.json(response)
             }
         }else{
-            res.json({
-                code: error,
-                response: {
-                    title: 'Invalid Code',
-                    message: falseCode
-                }
-            })
+            const response = getGeneralErrorMessage({})
+            res.json(response)
         }
     })
     .catch(err => {
-        console.log(err)
-        res.json({
-            code: error,
-            response:{
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
@@ -530,115 +265,80 @@ exports.verifyToken = (req, res, next) => {
     if(token){
         verify(token, signupSecret, (err, decoded) => {
             if(err){
-                res.json({
-                    code: error,
-                    response: {
-                        title: 'Authorization Failed',
-                        message: tokenInvalid
-                    },
-                    error: err
-                })
+                const response = getResponse(error, 'Authorization Failed', tokenInvalid, [], err)
+                res.json(response)
             }else{
                 req.decoded = decoded
                 next();
             }
         })
     }else{
-        res.json({
-            code: error,
-            response: {
-                title: 'Authorization Failed',
-                message: tokenInvalid
-            }
-        })
+        const response = getResponse(error, 'Unauthorized Request', tokenInvalid)
+        res.json(response)
     }
 }
 
 exports.sendPasswordResetLink = (req, res) => {
-    const { body: { email } } = req
-    User.findOne({ where: { email } })
-    .then(user => {
-        if(user === null){
-            res.json({
-                code: error,
-                response: {
-                    title: 'Account Not Found',
-                    message: userNotFound
-                }
-            })
-        }else{
-            const authToken = sign({ id: user.id }, signupSecret, { expiresIn: tokenExpiration })
-            const passwordResetUrl = `${appUrl}${user.id}/resetPassword/${authToken}`
-            const passwordResetContent = `${resetPasswordMessage} <a href='${passwordResetUrl}' target='_blank'>Reset Password</a>`
-            SendEmail(email, resetPasswordSubject, passwordResetContent)
-            res.json({
-                code: success,
-                response: {
-                    title: 'Email Sent',
-                    message: passwordResetLinkSent
-                }
-            })
-        }
-    })
-    .catch(err => {
-        console.log(err)
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
-    })
+    const { user: { dataValues: { id, email } } } = req
+    const { token } = getUserToken(email, id)
+    const emailData = getEmailContent(id, email, token, '', 'password-reset')
+    const response = getResponse(success, 'Email Sent', passwordResetLinkSent)
+    SendEmail(emailData)
+    res.json(response)
 }
 
 exports.resetPassword = (req, res) => {
-    const { body: { password }, params: { userId } } = req
-    User.findOne({ where: { id: userId } })
-    .then(user => {
-        if(user === null){
-            res.json({
-                code: error,
-                response: {
-                    title: 'Invalid Request',
-                    message: generalErrorMessage
-                }
-            })
-        }else{
-            const hashedPassword = hashSync(password, 8)
-            User.update({ password: hashedPassword }, { where: { id: userId } })
-            .then(() => {
-                SendEmail(user.email, 'Password Reset Success', passwordChangeSuccess)
-                res.json({
-                    code: success,
-                    response: {
-                        title: 'Password Change Success',
-                        message: passwordChangeSuccess
-                    }
-                })
-            })
-            .catch(err => {
-                res.json({
-                    code: error,
-                    response: {
-                        title: 'Error',
-                        message: generalErrorMessage
-                    },
-                    error: err
-                })
-            })
-        }
-
+    const { body: { password }, params: { userId }, user: { dataValues: { email } } } = req
+    User.update({ password: getHashedPassword(password) }, { where: { id: userId } })
+    .then(() => {
+        const emailData = getPasswordSuccessEmailContent(email)
+        const response = getResponse(success, 'Password Change Success', passwordChangeSuccess)
+        SendEmail(emailData)
+        res.json(response)
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
+    })
+}
+
+exports.verifyUser = (req, res, next) => {
+    const { params: { userId } } = req
+    User.findOne({ where: { id: userId } })
+    .then(user => {
+        if(user){
+            const { dataValues: { isVerified } } = user
+            if(isVerified){
+                req.user = user
+                next();
+            }else{
+                const response = getResponse(error, 'Account not Verified', userNotVerified)
+                res.json(response)
+            }
+        }else{
+            const response = getResponse(error, 'Invalid Request', userNotFound)
+            res.json(response)
+        }
+    })
+    .catch(err => {
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
+    })
+}
+
+exports.verifyPayment = (req, res, next) => {
+    const { userId } = req
+    Payment.findOne({ where: { userId, status: true } })
+    .then(payment => {
+        if(payment){
+            next();
+        }else{
+            const response = getResponse(error, 'Access Denied', accessDenied)
+            res.json(response)
+        }
+    })
+    .catch(err => {
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }

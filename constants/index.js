@@ -7,7 +7,7 @@ module.exports = {
     appUrl: 'http://localhost:8080/',
     // appUrl: 'https://nmcregistered.org.uk/',
     signupSecret: 'nightingale',
-    tokenExpiration: 12000, // In Seconds
+    tokenExpiration: 1200, // In Seconds
     linkExpiration: 20, // In minutes
     codeExpiration: 10, // In minutes
 
@@ -17,7 +17,7 @@ module.exports = {
         generalErrorMessage: 'Something went wrong',
         linkExpired: 'Activation link has been expired, please register again and verify your account',
         alreadyVerified: 'Your account is already verified. Please login into your account',
-        linkBroken: 'Activation link is broken. Please try again to verify or register again ',
+        linkBroken: 'Activation link is broken or expired. Please try again to verify or register again ',
         accountVerified: 'Your account has been verified please update your profile',
         recordAdded: 'Record successfully added',
         phoneAdded: 'Verification code has been sent to your phone. Code is valid for only 10 minutes',

@@ -1,12 +1,32 @@
-const { hashSync, compareSync }      = require('bcryptjs')
-const moment                         = require('moment')
-const randomize                      = require('randomatic')
-const { QueryTypes }             = require('sequelize')
-const { Professional, User, Phone, Timesheet, SingleTimesheet, BankDetails, sequelize }  = require('../models')
-const SendMessage                    = require('../config/message')
+const { QueryTypes } = require('sequelize')
+const SendMessage    = require('../config/message')
 
 const {
-    codeExpiration,
+    Professional,
+    User,
+    Phone,
+    Timesheet,
+    SingleTimesheet,
+    BankDetails,
+    sequelize
+}  = require('../models')
+
+const {
+    getResponse,
+    getGeneralErrorMessage,
+    setProfessionalBody,
+    getTwoFactorAuthTitle,
+    isPasswordValid,
+    getHashedPassword,
+    getRandomCode,
+    setPhoneInitialValues,
+    isActivationLinkExpired,
+    setProfessionalInitialValues,
+    getProfessionalOffersQuery,
+    getTimesheetsTitleMessage
+} = require('./helpers')
+
+const {
     codes:{
         error,
         success,
@@ -23,7 +43,6 @@ const {
         codeExpired,
         recordFound,
         phoneVerification,
-        addRecord,
         profileUpdated,
         invalidCurrentPassword,
         timesheetAdded,
@@ -32,370 +51,243 @@ const {
         shiftChanged,
         timesheetDeleted,
         bankDetailsRequired,
-        bankDetailsAdded
+        bankDetailsAdded,
     }
 } = require('../constants')
-const bankDetails = require('../models/bankDetails')
-
 
 exports.create = (req, res) => {
-    const { params: { userId }, files } = req
-    let { body } = req
-    if(files && files.profilePicture){
-        body.profilePicture = files.profilePicture[0].filename
-    }
-    const professional = body
-    professional.userId = userId
-    Professional.create(professional)
+    const { params: { userId }, files, body } = req
+    Professional.create(setProfessionalBody(userId, files, body))
     .then(() => {
-        res.json({ code: success, response:{ title: 'Record Added', message: recordAdded } })
+        const response = getResponse(success, 'Profile Added', recordAdded)
+        res.json(response)
     })
     .catch(err => {
-        res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
+    })
+}
+
+exports.verifyProfessional = (req, res, next) => {
+    const { params: { userId } } = req
+    Professional.findOne({ where: { userId } })
+    .then(professional => {
+        if(professional){
+            req.professional = professional
+            next();
+        }else{
+            const response = getGeneralErrorMessage({})
+            res.json(response)
+        }
+    })
+    .catch(err => {
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
 exports.updateProfessional = (req, res) => {
     const { params: { userId }, body, files } = req
-    if(files && files.document){
-        body.document = req.files.document[0].filename
-    }
-    if(files && files.profilePicture){
-        body.profilePicture = req.files.profilePicture[0].filename
-    }
-    Professional.findOne({ where: { userId } })
-    .then(professional => {
-        if(professional === null){
-            res.json({
-                code: error,
-                response: {
-                    title: 'Error',
-                    message: generalErrorMessage
-                },
-                error: err
-            })
-        }else{
-            Professional.update(body, { where: { userId } })
-            .then(() => {
-                res.json({
-                    code: success,
-                    response: {
-                        title: 'Profile Updated',
-                        message: profileUpdated
-                    }
-                })
-            })
-            .catch(err => {
-                res.json({
-                    code: error,
-                    response: {
-                        title: 'Error',
-                        message: generalErrorMessage
-                    },
-                    error: err
-                })
-            })
-        }
+    Professional.update(setProfessionalBody(userId, files, body), { where: { userId } })
+    .then(() => {
+        const response = getResponse(success, 'Profile Updated', profileUpdated)
+        res.json(response)
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
 exports.updateProfessionalSecurityDetails = (req, res) => {
-    const { params: { userId }, body: { currentPassword, newPassword, twoFactorAuthentication } } = req
-    if(currentPassword === '' || newPassword === ''){
-        Professional.findOne({ where: { userId } })
-        .then(professional => {
-            if(professional === null){
-                res.json({
-                    code: error,
-                    response: {
-                        title: 'Error',
-                        message: generalErrorMessage
-                    }
-                })
-            }else{
-                Professional.update({ twoFactorAuthentication }, { where: { userId } })
+    const { params: { userId, type }, user: { dataValues: { password } } } = req
+    const { body: { twoFactorAuthentication } } = req
+    Professional.update({ twoFactorAuthentication }, { where: { userId } })
+    .then(() => {
+        if(type === 'password'){
+            const { body: { currentPassword, newPassword } } = req
+            if(isPasswordValid(currentPassword, password)){
+                User.update({ password: getHashedPassword(newPassword) }, { where: { id: userId } })
                 .then(() => {
-                    res.json({
-                        code: success,
-                        response: {
-                            title: 'Success',
-                            message: profileUpdated
-                        }
-                    })
+                    const response = getResponse(success, 'Security Details Updated', profileUpdated)
+                    res.json(response)
                 })
                 .catch(err => {
-                    res.json({
-                        code: error,
-                        response: {
-                            title: 'Error',
-                            message: generalErrorMessage
-                        },
-                        error: err
-                    })
+                    const response = getGeneralErrorMessage(err)
+                    res.json(response)
                 })
-            }
-        })
-    }else{
-        User.findOne({ where: { id: userId } })
-        .then(user => {
-            if(user){
-                const isValid = compareSync(currentPassword, user.dataValues.password)
-                if(isValid){
-                    const hashedPassword = hashSync(newPassword, 8)
-                    User.update({ password: hashedPassword }, { where: { id: userId } })
-                    .then(() => {
-                        Professional.findOne({ where: { userId } })
-                        .then(professional => {
-                            if(professional === null){
-                                res.json({
-                                    code: error,
-                                    response: {
-                                        title: 'Error',
-                                        message: generalErrorMessage
-                                    }
-                                })
-                            }else{
-                                Professional.update({ twoFactorAuthentication }, { where: { userId } })
-                                .then(() => {
-                                    res.json({
-                                        code: success,
-                                        response: {
-                                            title: 'Success',
-                                            message: profileUpdated
-                                        }
-                                    })
-                                })
-                                .catch(err => {
-                                    res.json({
-                                        code: error,
-                                        response: {
-                                            title: 'Error',
-                                            message: generalErrorMessage
-                                        },
-                                        error: err
-                                    })
-                                })
-                            }
-                        })
-                    })
-                    .catch(err => {
-                        res.json({
-                            code: error,
-                            response: {
-                                title: 'Error',
-                                message: generalErrorMessage
-                            },
-                            error: err
-                        })
-                    })
-                }else{
-                    res.json({
-                        code: error,
-                        response: {
-                            title: 'Invalid Password',
-                            message: invalidCurrentPassword
-                        }
-                    })
-                }
             }else{
-                res.json({
-                    code: error,
-                    response: {
-                        title: 'Error',
-                        message: generalErrorMessage
-                    }
-                })
+                const response = getResponse(error, 'Invalid Password', invalidCurrentPassword)
+                res.json(response)
             }
-        })
-        .catch(err => {
-            res.json({
-                code: error,
-                response: {
-                    title: 'Error',
-                    message: generalErrorMessage
-                },
-                error: err
-            })
-        })
-    }
-    
+        }else{
+            const response = getResponse(success, getTwoFactorAuthTitle(twoFactorAuthentication), profileUpdated)
+            res.json(response)
+        }
+    })
+    .catch(err => {
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
+    })
 }
 
 exports.addPhone = (req, res) => {
     const { params: { userId }, body: { phone } } = req
-    User.findOne({ where: { id: userId } })
-    .then(user => {
-        if(user === null){
-            res.json({ code: error, response:{ title: 'Not Found', message: generalErrorMessage } })
-        }else{
-            const { dataValues: { isVerified } } = user
-            if(isVerified){
-                Phone.findOne({ where: { userId } })
-                .then(data => {
-                    if(data === null){
-                        Phone.findOne({ where: { phone } })
-                        .then(model => {
-                            if(model === null){
-                                const code = randomize('0', 6)
-                                const contact = {}
-                                contact.phone = phone,
-                                contact.code = code
-                                contact.status = false
-                                contact.userId = userId
-                                const message = `Your verification code is ${code}`
-                                SendMessage(phone, message)
-                                Phone.create(contact)
-                                .then(() => {
-                                    res.json({ code: success, response: { title: 'Phone Added',  message: phoneAdded } })
-                                })
-                                .catch(err => {
-                                    res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
-                                })
-                            }else{
-                                res.json({ code: error, response: { title: 'Error', message: phoneAlreadyUsed } })
-                            }
-                        })
-                    }
-                    else{
-                        const { status } = data
-                        if(status){
-                                res.json({ code: error, response: { title: 'Error', message: phoneAlreadyUsed } })
-                        }else{
-                            const code = randomize('0', 6)
-                            const message = `Your verification code is ${code}`
-                            SendMessage(phone, message)
-                            Phone.update({ phone, code }, { where: { id: data.id } })
-                            .then(() => {
-                                res.json({ code: success, response: { title: 'Phone Added',  message: phoneAdded } })
-                            })
-                            .catch(err => {
-                                res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
-                            })
-                        }
-                    }
-                })
+    Phone.findOne({ where: { userId } })
+    .then(data => {
+        if(data){
+            const { dataValues: { status } } = data
+            if(status){
+                const response = getResponse(info, 'Phone already Verified', phoneAlreadyVerified)
+                res.json(response)
             }else{
-                res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage } })
+                const code = getRandomCode()
+                const message = `Your verification code is ${code}`
+                SendMessage(phone, message)
+                Phone.update({ phone, code }, { where: { id: data.id } })
+                .then(() => {
+                    const response = getResponse(success, 'Phone Added', phoneAdded)
+                    res.json(response)
+                })
+                .catch(err => {
+                    const response = getGeneralErrorMessage(err)
+                    res.json(response)
+                })
             }
+        }else{
+            Phone.findOne({ where: { phone, status: true } })
+            .then(model => {
+                if(model){
+                    const response = getResponse(error, 'Phone already in Use', phoneAlreadyUsed)
+                    res.json(response)
+                }else{
+                    const code = getRandomCode()
+                    const message = `Your verification code is ${code}`
+                    SendMessage(phone, message)
+                    Phone.create(setPhoneInitialValues(userId, code, phone))
+                    .then(() => {
+                        const response = getResponse(success, 'Phone Added', phoneAdded)
+                        res.json(response)
+                    })
+                    .catch(err => {
+                        const response = getGeneralErrorMessage(err)
+                        res.json(response)
+                    })
+                }
+            })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
         }
+    })
+    .catch(err => {
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
 exports.verifyPhone = (req, res) => {
-    const { params: { userId }, body: { code } } = req
+    const { params: { userId }, body: { code: reqCode } } = req
     Phone.findOne({ where: { userId: userId } })
     .then(model => {
-        if(model === null){
-            res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
-        }else{
-            const { dataValues } = model
-            if(dataValues.code === code){
-                const codeTime = moment(model.updatedAt)
-                
-                const currentTime = new moment()
-                const minutes = currentTime.diff(codeTime, 'minutes')
-                if(minutes > codeExpiration){
-                    res.json({ code: error, response: { title: 'Code Expired', message: codeExpired } })
+        if(model){
+            const { dataValues: { code, updatedAt, status } } = model
+            if(code === reqCode){
+                if(status){
+                    const response = getResponse(error, 'Phone already Verified', phoneAlreadyVerified)
+                    res.json(response)
                 }else{
-                    if(dataValues.status){
-                        res.json({ code: error, response: { title: 'Error', message: phoneAlreadyVerified } })
+                    if(isActivationLinkExpired(updatedAt, 'phone')){
+                        const response = getResponse(error, 'Code Expired', codeExpired)
+                        res.json(response)
                     }else{
-                        const contact = dataValues
-                        contact.status = true
-                        Phone.update(contact, { where: { userId } })
+                        Phone.update({ status: true }, { where: { userId } })
                         .then(() => {
-                            res.json({ code: success, response: { title: 'Phone Verified', message: phoneVerified } })
+                            const response = getResponse(success, 'Phone Verified', phoneVerified)
+                            res.json(response)
                         })
                         .catch(err => {
-                            res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
+                            const response = getGeneralErrorMessage(err)
+                            res.json(response)
                         })
-                    }
+                    }   
                 }
             }else{
-                res.json({ code: error, response:{ title: 'Invalid Code', message: falseCode } })
+                const response = getResponse(error, 'Invalid Code', falseCode)
+                res.json(response)
             }
+        }else{
+            const response = getResponse(error, 'Invalid Request', generalErrorMessage)
+            res.json(response)
         }
     })
     .catch(err => {
-        res.json({ code: error, response:{ title: 'Error', message: generalErrorMessage }, error: err })
-    })
-}
-
-exports.getPhoneDetails = (req, res) => {
-    const { params: { userId } } = req
-    Phone.findOne({ where: { userId } })
-    .then(phone => {
-        res.json(phone)
-    })
-    .catch(err => {
-        res.json(err)
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
 exports.getProfessionalDetails = (req, res) => {
-    const { params: { userId } } = req
-    User.findOne({ where: { id: userId, isVerified: true } })
-    .then(user => {
-        if(user === null){
-            res.json({ code: error, response: { title: 'Not Found', message: noRecord } })
-        }else{
-            Professional.findOne({ where: { userId } })
-            .then(professional => {
-                if(professional === null){
-                    Phone.findOne({ where: { userId } })
-                    .then(phone => {
-                        const professional = {}
-                        professional.email = user.email
-                        professional.isVerified = user.isVerified
-                        if(phone === null){
-                            professional.phone = ''
-                            professional.phoneStatus = false
-                            professional.bankDetails = {}
-                            res.json({ code: info, response: { title: 'Phone Verification', message: phoneVerification }, professional })
+    const { params: { userId }, user: { dataValues: userData } } = req
+    Professional.findOne({ where: { userId } })
+    .then(professional => {
+        if(professional){
+            Phone.findOne({ where: { userId } })
+            .then(model => {
+                if(model){
+                    const { dataValues: phone } = model
+                    BankDetails.findOne({ where: { userId } })
+                    .then(details => {
+                        if(details){
+                            sequelize.query(getProfessionalOffersQuery(userId), { type: QueryTypes.SELECT })
+                            .then(offers => {
+                                const data = setProfessionalInitialValues(userData, phone, professional.dataValues, offers.dataValues)
+                                const response = getResponse(success, 'Perfect Profile', recordFound, data)
+                                res.json(response)
+                            })
+                            .catch(err => {
+                                const response = getGeneralErrorMessage(err)
+                                res.json(response)
+                            })
                         }else{
-                            professional.phone = phone.dataValues.phone
-                            professional.phoneStatus = phone.dataValues.status
-                            professional.bankDetails = {}
-                            res.json({ code: info, response: { title: 'Email Verified', message: addRecord }, professional })
+                            const data = setProfessionalInitialValues(userData, phone, {}, professional.dataValues)
+                            const response = getResponse(info, 'Bank Details Required', bankDetailsRequired, data)
+                            res.json(response)
                         }
-                    })   
-                }else{
-                    professional.dataValues.email = user.email
-                    professional.dataValues.isVerified = user.isVerified
-                    Phone.findOne({ where: { userId } })
-                    .then(contact => {
-                        professional.dataValues.phone = contact.dataValues.phone
-                        professional.dataValues.phoneStatus = contact.dataValues.status
-                        BankDetails.findOne({ where: { userId } })
-                        .then(bankDetails => {
-                            if(bankDetails){
-                                professional.dataValues.bankDetails = bankDetails
-                                sequelize.query('SELECT offers.id, offers.company, (SELECT organization from companies WHERE userId=offers.company) as companyName, offers.shiftRate, offers.shifts, address, offers.message, offers.status FROM offers WHERE professional='+userId, {
-                                    type: QueryTypes.SELECT
-                                })
-                                .then(offers => {
-                                    professional.dataValues.offers = offers
-                                    res.json({ code: success, response: { title: 'Perfect Profile', message: recordFound }, professional })
-                                })
-                            }else{
-                                professional.dataValues.bankDetails = {}
-                                res.json({ code: info, response: { title: 'Bank Details', message: bankDetailsRequired }, professional })
-                            }
-                        })
                     })
+                }else{
+                    const response = getGeneralErrorMessage({})
+                    res.json(response)
                 }
             })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
+        }else{
+            Phone.findOne({ where: { userId } })
+            .then(model => {
+                if(model){
+                    const { dataValues } = model
+                    const data = setProfessionalInitialValues(userData, dataValues)
+                    const response = getResponse(info, 'Phone Verification Required', phoneVerification, data)
+                    res.json(response)
+                }else{
+                    const data = setProfessionalInitialValues(userData, {})
+                    const response = getResponse(info, 'Phone Verification Required', phoneVerification, data)
+                    res.json(response)
+                }
+            })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
         }
+    })
+    .catch(err => {
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
@@ -413,39 +305,22 @@ exports.addTimesheet = (req, res) => {
             .then(data => {
                 schedule.push(data)
                 if(schedule.length === singleTimesheet.length){
-                    res.json({
-                        code: success,
-                        response: {
-                            title: 'Timesheet Added',
-                            message: timesheetAdded
-                        },
-                        timesheetId: id,
-                        schedule
-                    })
+                    const data = { timesheetId: id, schedule }
+                    const response = getResponse(success, 'Timesheet Added', timesheetAdded, data)
+                    res.json(response)
                 }
             })
             .catch(err => {
                 if(i === singleTimesheet.length - 1){
-                    res.json({
-                        code: error,
-                        response: {
-                            title: 'Error',
-                            message: generalErrorMessage
-                        },
-                        error: err
-                    })
+                    const response = getGeneralErrorMessage(err)
+                    res.json(response)
                 }
             })
         }
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            }
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
@@ -453,20 +328,12 @@ exports.getSingletimesheet = (req, res) => {
     const { params: { timesheetId } } = req
     SingleTimesheet.findAll({ where: { timesheetId } })
     .then(timesheet => {
-        res.json({
-            code: success,
-            timesheet
-        })
+        const response = getResponse(success, '', '', timesheet)
+        res.json(response)
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
@@ -479,24 +346,14 @@ exports.getTimesheets = (req, res) => {
         ]
     })
     .then(model => {
-        res.json({
-            code: model.length ? success : info,
-            response: {
-                title: model.length > 0 ? `Timesheet(s) Found` : `No Timesheet Found`,
-                message: timesheetsFound
-            },
-            timesheets: model
-        })
+        const code = model.length === 5 ? success : info
+        const title = getTimesheetsTitleMessage(model.length)
+        const response = getResponse(code, title, timesheetsFound, model)
+        res.json(response)
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
@@ -504,23 +361,12 @@ exports.updateShiftStatus = (req, res) => {
     const { params: { shift, status } } = req
     SingleTimesheet.update({ status }, { where: { id: shift } })
     .then(() => {
-        res.json({
-            code: success,
-            response: {
-                title: 'Status Updated',
-                message: shiftStatusChanged
-            }
-        })
+        const response = getResponse(success, 'Status Updated', shiftStatusChanged)
+        res.json(response)
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
@@ -528,23 +374,12 @@ exports.updateTimesheetShift = (req, res) => {
     const { params: { shiftId }, body } = req
     SingleTimesheet.update(body, { where: { id: shiftId } })
     .then(() => {
-        res.json({
-            code: success,
-            response: {
-                title: 'Shift Changed',
-                message: shiftChanged
-            }
-        })
+        const response = getResponse(success, 'Shift Modified', shiftChanged)
+        res.json(response)
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
@@ -554,34 +389,17 @@ exports.deleteTimesheet = (req, res) => {
     .then(() => {
         SingleTimesheet.destroy({ where: { timesheetId } })
         .then(() => {
-            res.json({
-                code: success,
-                response: {
-                    title: 'Timesheet Deleted',
-                    message: timesheetDeleted
-                }
-            })
+            const response = getResponse(success, 'Timesheet Deleted', timesheetDeleted)
+            res.json(response)
         })
         .catch(err => {
-            res.json({
-                code: error,
-                response: {
-                    title: 'Error',
-                    message: generalErrorMessage
-                },
-                error: err
-            })
+            const response = getGeneralErrorMessage(err)
+            res.json(response)
         })
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 } 
 
@@ -589,51 +407,14 @@ exports.addBankDetails = (req, res) => {
     const { params: { userId } } = req
     let { body } = req
     body.userId = userId
-    console.log('Body', body)
-    User.findOne({ where: { id: userId } })
-    .then(user => {
-        if(user){
-            BankDetails.create(body)
-            .then(() => {
-                res.json({
-                    code: success,
-                    response: {
-                        title: 'Bank Details Added',
-                        message: bankDetailsAdded
-                    }
-                })
-            })
-            .catch(err => {
-                console.log('Error 2', err)
-                res.json({
-                    code: error,
-                    response: {
-                        title: 'Error',
-                        message: generalErrorMessage
-                    },
-                    error: err
-                })
-            })
-        }else{
-            res.json({
-                code: error,
-                response: {
-                    title: 'Invalid User',
-                    message: generalErrorMessage
-                }
-            })
-        }
+    BankDetails.create(body)
+    .then(() => {
+        const response = getResponse(success, 'Bank Details Added', bankDetailsAdded)
+        res.json(response)
     })
     .catch(err => {
-        console.log('Error 1', err)
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
 
@@ -644,42 +425,20 @@ exports.updatedBankDetails = (req, res) => {
         if(model){
             BankDetails.update(body, { where: { userId } })
             .then(() => {
-                res.json({
-                    code: success,
-                    response: {
-                        title: 'Bank Details Updated',
-                        message: profileUpdated
-                    }
-                })
+                const response = getResponse(success, 'Bank Details Modified', profileUpdated)
+                res.json(response)
             })
             .catch(err => {
-                res.json({
-                    code: error,
-                    response: {
-                        title: 'Error',
-                        message: generalErrorMessage
-                    },
-                    error: err
-                })
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
             })
         }else{
-            res.json({
-                code: error,
-                response: {
-                    title: 'User not Found',
-                    message: generalErrorMessage
-                }
-            })
+            const response = getResponse(error, 'Invalid Request', generalErrorMessage)
+            res.json(response)
         }
     })
     .catch(err => {
-        res.json({
-            code: error,
-            response: {
-                title: 'Error',
-                message: generalErrorMessage
-            },
-            error: err
-        })
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
     })
 }
