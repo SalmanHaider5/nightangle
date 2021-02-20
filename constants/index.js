@@ -2,12 +2,13 @@
 module.exports = {
 
     // hostUrl: 'https://intelligent-innovation.herokuapp.com/',
-    // hostUrl: 'https://server.nmcregistered.org.uk/server/',
-    hostUrl: 'http://localhost:1000/',
-    appUrl: 'http://localhost:8080/',
-    // appUrl: 'https://nmcregistered.org.uk/',
+    hostUrl: 'https://server.nmcregistered.org.uk/server/',
+    // hostUrl: 'http://localhost:1000/',
+    // appUrl: 'http://localhost:8080/',
+    appUrl: 'https://nmcregistered.org.uk/',
     signupSecret: 'nightingale',
     tokenExpiration: 1200, // In Seconds
+    // loginExpireation,
     linkExpiration: 20, // In minutes
     codeExpiration: 10, // In minutes
 
@@ -48,7 +49,7 @@ module.exports = {
         timesheetDeleted: 'Timesheet has been successfully deleted',
         messageSent: 'Your message has been delivered. You will be reached soon',
         accessDenied: 'You are not authorized to perform this action',
-        secretRetrieved: 'Payment Secret has been retrieved successfully',
+        secretRetrieved: 'Add your credentials to make payment',
         paymentReceived: 'Your payment has been received.',
         bankDetailsRequired: 'Please add your bank details',
         bankDetailsAdded: 'Bank details has been successfully added',
@@ -56,7 +57,8 @@ module.exports = {
         offerAccepted: 'You have successfully accepted this offer',
         offerDeclined: 'You have successfully declined this offer',
         offerApproved: 'You have successfully approved this offer',
-        offerRejected: 'You have successfully rejected this offer'
+        offerRejected: 'You have successfully rejected this offer',
+        paymentUnsuccessful: 'Your payment is not verifed, please contact our Support if you have any issue.'
     },
 
     emailCredentials: {

@@ -14,27 +14,27 @@ const {
     stripeCredentials: { amount, vatPercent }
 } = require('../constants')
 
-exports.getResponse = (status, title, message, data = [], error = {}) => {
+exports.getResponse = (type, title, text, data = [], error = {}) => {
     return {
-        code: status,
-        response: {
+        type,
+        message: {
             title,
-            message
+            text
         },
         data,
         error
     }
 }
 
-exports.getGeneralErrorMessage = err => {
+exports.getGeneralErrorMessage = error => {
     return {
-        code: error,
-        response: {
+        type: 'error',
+        message: {
             title: 'Error',
-            message: generalErrorMessage
+            text: generalErrorMessage
         },
         data: [],
-        error: err
+        error
     }
 }
 
@@ -76,21 +76,22 @@ exports.getContactEmailContent = (name, phone, email, subject, message) => {
 }
 
 exports.setNewOffer = (professional, offer) => {
-    return {...professional, ...offer}
+    const { nmcPin: professionalNmc, fullName: professionalName } = professional
+    return { ...offer, professionalName, professionalNmc }
 }
 
 exports.getNewOfferMessage = (id, address) => {
     return `Hello, you have a new shift offer from NMC Registered at ${address}. Please click this link to view offer: ${appUrl}professional/${id}/requests`
 }
 
-exports.getBasicProfessionalData = (id, email, role, phone = '', twoFactorAuth = false) => {
-    const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
+exports.getBasicProfessionalData = (id, email, role, twoFactorAuth = false) => {
+    const authToken = sign({ id }, signupSecret)
     return {
         userId: id,
         role,
         email,
+        auth: true,
         token: authToken,
-        phone,
         twoFactorAuthentication: twoFactorAuth
     }
 }
@@ -98,6 +99,7 @@ exports.getBasicProfessionalData = (id, email, role, phone = '', twoFactorAuth =
 exports.getBasicCompanyData = (id, email, role) => {
     const authToken = sign({ id }, signupSecret, { expiresIn: tokenExpiration })
     return {
+        auth: true,
         userId: id,
         role,
         email,
@@ -115,10 +117,10 @@ exports.setPhoneInitialValues = (userId, code, phone) => {
     }
 }
 
-exports.setProfessionalBody = (id, files, body) => {
+exports.setProfessionalBody = (userId, files, body) => {
     return {
         ...body,
-        id,
+        userId,
         profilePicture: files && files.profilePicture ? files && files.profilePicture[0].filename : ''
     }
 }
@@ -130,7 +132,7 @@ exports.getRandomCode = () => {
 exports.getCompanyPaymentDetails = id => {
     return {
         balance: amount,
-        payDate: '',
+        payDate: null,
         vat: vatPercent,
         status: false,
         userId: id
@@ -168,16 +170,17 @@ exports.getCompanyInitialValues = email => {
     }
 }
 
-exports.setProfessionalInitialValues = (user, phoneInfo, bankData = {}, professional = {}, offers = []) => {
+exports.setProfessionalInitialValues = (user, phoneInfo, bankDetails = {}, professional = {}, offers = []) => {
+    console.log('Data', offers)
     const { phone = '', status = false } = phoneInfo
     const { email = '', isVerified = false } = user
     return {
-        phone, phoneStatus: status, bankData, email, isVerified, ...professional, offers
+        phone, phoneStatus: status, bankDetails, email, isVerified, ...professional, offers
     }
 }
 
 exports.getTimesheetsTitleMessage = length => {
-    return model.length > 0 ? `${length} timesheets Exists` : 'No timesheet found'
+    return length > 0 ? `${length} timesheets Exists` : 'No timesheet found'
 }
 
 exports.setCompanyValues = (model, email, offers, payment) => {
@@ -185,8 +188,16 @@ exports.setCompanyValues = (model, email, offers, payment) => {
     return { ...model, email, offers, isPaid: status, balance, vat, isVerified: true, payDate }
 }
 
+exports.equals = (a, b) => {
+    return a === b
+}
+
+exports.isTimesheetExpired = date => {
+    return moment(date).isBefore(moment())
+}
+
 exports.getProfessionalPublicAttributes = () => {
-    return ['status', 'profilePicture', 'fullName', 'dateOfBirth', 'nmcPin', 'qualification', 'crbDocument', 'userId']
+    return ['status', 'profilePicture', 'fullName', 'dateOfBirth', 'nmcPin', 'qualification', 'postCode', 'crbDocument', 'userId']
 }
 
 exports.getOffersQuery = id => {

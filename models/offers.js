@@ -27,6 +27,9 @@ module.exports  = (sequelize, types) => {
         message: {
             type: STRING
         },
+        professionalMsg: {
+            type: STRING
+        },
         status: {
             type: STRING,
             default: 'pending'

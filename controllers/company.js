@@ -1,4 +1,4 @@
-const { Op } = require('sequelize')
+const { Op, Sequelize } = require('sequelize')
 const {
     Company,
     User,
@@ -49,11 +49,13 @@ exports.add = (req, res) => {
             res.json(response)
         })
         .catch(err => {
+            console.log('Err2', err)
             const response = getGeneralErrorMessage(err)
             res.json(response)
         })
     })
     .catch(err => {
+        console.log('Err1', err)
         const response = getGeneralErrorMessage(err)
         res.json(response)
     })
@@ -83,7 +85,7 @@ exports.getCompanyDetails = (req, res) => {
     .then(company => {
         if(company){
             const { dataValues } = company
-            sequelize.query(getOffersQuery(userId))
+            sequelize.query(getOffersQuery(userId), { type: Sequelize.QueryTypes.SELECT })
             .then(offers => {
                 Payment.findOne({ where: { userId } })
                 .then(payment => {
@@ -98,7 +100,6 @@ exports.getCompanyDetails = (req, res) => {
                     }
                 })
                 .catch(err => {
-                    console.log(err)
                     const response = getGeneralErrorMessage(err)
                     res.json(response)
                 })
@@ -119,6 +120,7 @@ exports.getCompanyDetails = (req, res) => {
 }
 
 exports.verifyCompany = (req, res, next) => {
+    const { params: { userId } } = req
     Company.findOne({ where: { userId } })
     .then(company => {
         if(company){
@@ -187,6 +189,9 @@ exports.searchTimesheets = (req, res) => {
 }
 
 exports.filterProfessionalsByShift = (req, res) => {
+
+    const { params: { timesheetId }, query: { shifts, date } } = req
+
     SingleTimesheet.findOne({ where: { timesheetId, date, status: 1, shift: {
         [Op.or]: [shifts.split(',')]
     } } })
@@ -195,6 +200,7 @@ exports.filterProfessionalsByShift = (req, res) => {
         res.json(response)
     })
     .catch(err => {
+        console.log(err)
         const response = getGeneralErrorMessage(err)
         res.json(response)
     })

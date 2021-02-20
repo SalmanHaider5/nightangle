@@ -18,7 +18,8 @@ module.exports  = (sequelize, types) => {
             type: STRING
         },
         userId: {
-            type: STRING
+            type: STRING,
+            unique: true
         }
     })
 }

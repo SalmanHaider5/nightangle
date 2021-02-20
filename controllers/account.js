@@ -42,7 +42,9 @@ const {
         tokenInvalid,
         passwordResetLinkSent,
         passwordChangeSuccess,
-        falseCode
+        falseCode,
+        accessDenied,
+        phoneVerification
     },
     codes: {
         error,
@@ -76,7 +78,11 @@ exports.signup = (req, res) => {
                         const userData = getUserData(email, password, role)
                         User.update(userData, { where: { email } })
                         .then(() => {
-                            const response = getResponse(success, 'Account Created', emailSent)
+                            const response = getResponse(success, 'Check you Email', emailSent)
+                            res.json(response)
+                        })
+                        .catch(err => {
+                            const response = getGeneralErrorMessage(err)
                             res.json(response)
                         })
                     }
@@ -96,7 +102,7 @@ exports.signup = (req, res) => {
                 .then(() => {
                     const { token } = userToken
                     const emailData = getEmailContent(id, email, token, role)
-                    const response = getResponse(success, 'Account Created', emailSent)
+                    const response = getResponse(success, 'Check you Email', emailSent)
                     SendEmail(emailData)
                     res.json(response)
                 })
@@ -141,7 +147,7 @@ exports.verify = (req, res) => {
                             .then(() => {
                                 Token.destroy({ where: { email } })
                                 .then(() => {
-                                    const data = { token, userId, role, email }
+                                    const data = { auth: true, token, userId, role, email }
                                     const response = getResponse(success, 'Account Verified', accountVerified, data)
                                     res.json(response)
                                 })
@@ -173,6 +179,31 @@ exports.verify = (req, res) => {
     })
 }
 
+exports.getUserByEmail = (req, res, next) => {
+    const { body: { email } } = req
+    User.findOne({ where: { email } })
+    .then(user => {
+        if(user){
+            const { dataValues: { isVerified } } = user
+            if(isVerified){
+                req.user = user
+                next();
+            }else{
+                const response = getResponse(error, 'Account not Verified', userNotVerified)
+                res.json(response)
+            }
+        }else{
+            const response = getResponse(error, 'User not Found', userNotFound)
+            res.json(response)
+        }
+    })
+    .catch(err => {
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
+    })
+}
+
+
 exports.login = (req, res) => {
     const { body: { email, password: reqPassword }, user } = req
     const { dataValues: { id, password, role } } = user
@@ -195,8 +226,8 @@ exports.login = (req, res) => {
                         SendMessage(phone, message)
                         Phone.update({ code }, { where: { userId: id } })
                         .then(() => {
-                            const data = { userId: id, email, role }
-                            const response = getResponse(info, 'Mobile Verification Required', data)
+                            const data = { userId: id, email, role, twoFactorAuthentication }
+                            const response = getResponse(info, 'Mobile Verification Required', phoneVerification, data)
                             res.json(response)
                         })
                         .catch(err => {
@@ -241,7 +272,7 @@ exports.verifyLogin = (req, res) => {
                     res.json(response)
                 }else{
                     const { dataValues: { email, role } } = user
-                    const data = getBasicProfessionalData(professionalId, email, role, userPhone, true)
+                    const data = getBasicProfessionalData(professionalId, email, role, true)
                     const response = getResponse(success, 'Login Success', loginSuccess, data)
                     res.json(response)
                 }
@@ -321,16 +352,18 @@ exports.verifyUser = (req, res, next) => {
         }
     })
     .catch(err => {
+        console.log(err)
         const response = getGeneralErrorMessage(err)
         res.json(response)
     })
 }
 
 exports.verifyPayment = (req, res, next) => {
-    const { userId } = req
+    const { params: { userId } } = req
     Payment.findOne({ where: { userId, status: true } })
     .then(payment => {
         if(payment){
+            console.log('Here verified')
             next();
         }else{
             const response = getResponse(error, 'Access Denied', accessDenied)
@@ -338,6 +371,7 @@ exports.verifyPayment = (req, res, next) => {
         }
     })
     .catch(err => {
+        console.log('err', err)
         const response = getGeneralErrorMessage(err)
         res.json(response)
     })

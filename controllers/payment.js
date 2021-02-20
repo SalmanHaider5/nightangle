@@ -1,5 +1,8 @@
-const gateway = require('../config/braintree')
+const checkoutNodeJssdk = require('@paypal/checkout-server-sdk');
 const { User } = require('../models')
+const { getGeneralErrorMessage, getResponse, equals } = require('./helpers')
+
+
 const {
     stripeCredentials:{
         secretKey,
@@ -10,6 +13,7 @@ const {
     },
     responseMessages: {
         secretRetrieved,
+        paymentUnsuccessful,
         generalErrorMessage
     },
     codes: {
@@ -17,62 +21,68 @@ const {
         error,
         info
     }
-}             = require('../constants')
+}  = require('../constants')
 const stripe  = require('stripe')(secretKey)
+const paypalClient = require('./paypal')
 
-exports.createClientSecret = (req, res) => {
-    const vatBalance = parseInt(amount) * parseInt(vatPercent)/100
-    const netAmount = parseInt(vatBalance) + parseInt(amount)
+
+exports.createStripeSecret = (req, res) => {
+    
+    const vatBalance = parseInt(amount) * parseInt(vatPercent)/100,
+    netAmount = parseInt(vatBalance) + parseInt(amount)
+
     stripe.paymentIntents.create({
         amount: netAmount,
         currency,
         payment_method_types: ['card']
     }, (err, intent) => {
         if(err){
-            res.json(err)
+            const response = getGeneralErrorMessage(err)
+            res.json(response)
         }else{
-            res.json({
-                code: intent.client_secret ? success : error,
-                response: {
-                    title: intent.client_secret ? 'Secret Retrieved' : 'Error',
-                    message: intent.client_secret ? secretRetrieved : generalErrorMessage
-                },
-                secret: intent.client_secret ? intent.client_secret : '' 
-            })
+            const { client_secret } = intent
+            const code = client_secret ? success : error,
+                title = client_secret ? 'Stripe Loaded' : 'Stripe Error',
+                message = client_secret ? secretRetrieved : generalErrorMessage
+
+            const response = getResponse(code, title, message, { stripeSecret: client_secret })
+            res.json(response)
         }
     })
 }
 
-exports.getPaypalClientToken = (req, res) => {
-    const { params: { userId } } = req
-    User.findOne({ where: { id: userId, isVerified: true, role: 'company' } })
-    .then(user => {
-        if(user === null){
-            res.json({ code: error, response: generalErrorMessage })
-        }
-        else{
-            const { dataValues: { email } } = user
-            gateway.customer.create({
-                id: userId,
-                email: email
-            }, (err, response) => {
-                if(err){
-                    res.json({ code: error, response: generalErrorMessage, error: err })
-                }else if(response){
-                    gateway.clientToken.generate({
-                        customerId: userId 
-                    }, (error, customer) => {
-                        if(error){
-                            res.json({ code: error, response: generalErrorMessage, error: response })
-                        }else{
-                            res.json({ code: success, token: customer.clientToken })
-                        }
-                    })
-                }
-            })
-        }
-    })
-    .catch(error => {
-        res.json({ code: error, response: generalErrorMessage, error })
-    })
+exports.verifyStripePayment = async (req, res, next) => {
+    const { body } = req,
+        { paymentIntent: { id } } = body,
+        intent = await stripe.paymentIntents.retrieve(id),
+        { charges: { data = [] } }= intent || {},
+        { status } = data[0] || {}
+
+    if(status && equals(status, "succeeded")){
+        next();
+    }else{
+        const response = getResponse(error, 'Payment not Verified', paymentUnsuccessful)
+        res.json(response)
+    }
 }
+
+exports.capturePaypalTransaction = async (req, res, next) => {
+    const { body } = req,
+        { orderID } = body
+    
+    const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(orderID);
+    request.requestBody({});
+
+    try{
+
+        const capture = await paypalClient.client().execute(request)
+        console.log(capture)
+        next();
+
+    }catch(err){
+        
+        const response = getResponse(error, 'Payment not Verified', paymentUnsuccessful)
+        res.json(response)
+
+    }
+}   

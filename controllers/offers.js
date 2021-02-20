@@ -62,6 +62,7 @@ exports.createOffer = (req, res) => {
 
 exports.updateOffer = (req, res) => {
     const { body, params: { offerId } } = req
+    console.log('Test', body)
     Offer.update(body, { where: { id: offerId } })
     .then(() => {
         const { status } = body

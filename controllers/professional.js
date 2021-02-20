@@ -23,7 +23,10 @@ const {
     isActivationLinkExpired,
     setProfessionalInitialValues,
     getProfessionalOffersQuery,
-    getTimesheetsTitleMessage
+    getTimesheetsTitleMessage,
+    equals,
+    getTimesheetValues,
+    isTimesheetExpired
 } = require('./helpers')
 
 const {
@@ -192,7 +195,7 @@ exports.verifyPhone = (req, res) => {
     Phone.findOne({ where: { userId: userId } })
     .then(model => {
         if(model){
-            const { dataValues: { code, updatedAt, status } } = model
+            const { dataValues: { code, updatedAt, status, phone } } = model
             if(code === reqCode){
                 if(status){
                     const response = getResponse(error, 'Phone already Verified', phoneAlreadyVerified)
@@ -204,7 +207,8 @@ exports.verifyPhone = (req, res) => {
                     }else{
                         Phone.update({ status: true }, { where: { userId } })
                         .then(() => {
-                            const response = getResponse(success, 'Phone Verified', phoneVerified)
+                            const data = { phone }
+                            const response = getResponse(success, 'Phone Verified', phoneVerified, data)
                             res.json(response)
                         })
                         .catch(err => {
@@ -242,7 +246,7 @@ exports.getProfessionalDetails = (req, res) => {
                         if(details){
                             sequelize.query(getProfessionalOffersQuery(userId), { type: QueryTypes.SELECT })
                             .then(offers => {
-                                const data = setProfessionalInitialValues(userData, phone, professional.dataValues, offers.dataValues)
+                                const data = setProfessionalInitialValues(userData, phone, details.dataValues, professional.dataValues, offers)
                                 const response = getResponse(success, 'Perfect Profile', recordFound, data)
                                 res.json(response)
                             })
@@ -266,12 +270,12 @@ exports.getProfessionalDetails = (req, res) => {
                 res.json(response)
             })
         }else{
-            Phone.findOne({ where: { userId } })
+            Phone.findOne({ where: { userId, status: true } })
             .then(model => {
                 if(model){
                     const { dataValues } = model
                     const data = setProfessionalInitialValues(userData, dataValues)
-                    const response = getResponse(info, 'Phone Verification Required', phoneVerification, data)
+                    const response = getResponse(info, 'Update your Profile', phoneVerified, data)
                     res.json(response)
                 }else{
                     const data = setProfessionalInitialValues(userData, {})
@@ -297,7 +301,7 @@ exports.addTimesheet = (req, res) => {
     timesheet.userId = userId
     Timesheet.create(timesheet)
     .then(model => {
-        const { id } = model
+        const { id, startingDay, endingDay } = model
         const schedule = []
         for(let i = 0; i < singleTimesheet.length; i++){
             singleTimesheet[i].timesheetId = id
@@ -305,7 +309,7 @@ exports.addTimesheet = (req, res) => {
             .then(data => {
                 schedule.push(data)
                 if(schedule.length === singleTimesheet.length){
-                    const data = { timesheetId: id, schedule }
+                    const data = { id, schedule, startingDay, endingDay }
                     const response = getResponse(success, 'Timesheet Added', timesheetAdded, data)
                     res.json(response)
                 }
@@ -337,6 +341,21 @@ exports.getSingletimesheet = (req, res) => {
     })
 }
 
+const getTimesheet = model => {
+    const { id, dataValues } = model
+    return SingleTimesheet.findAll({ where: { timesheetId: id } })
+    .then(timesheet => {
+        const timesheets = Object.assign({}, dataValues)
+        timesheets.schedule = timesheet
+        return timesheets
+    })
+    .catch(err => {
+        console.log(err)
+        const response = getGeneralErrorMessage(err)
+        return response
+    })
+}
+
 exports.getTimesheets = (req, res) => {
     const { params: { userId } } = req
     Timesheet.findAll({
@@ -345,20 +364,40 @@ exports.getTimesheets = (req, res) => {
             ['startingDay', 'ASC']
         ]
     })
-    .then(model => {
-        const code = model.length === 5 ? success : info
-        const title = getTimesheetsTitleMessage(model.length)
-        const response = getResponse(code, title, timesheetsFound, model)
-        res.json(response)
+    .then(models => {
+        const timesheets = models.map(model => {
+            const { id, endingDay } = model
+            if(isTimesheetExpired(endingDay)){
+                SingleTimesheet.destroy({ where: { timesheetId: id } })
+                .then(() => {
+                    Timesheet.destroy({ where: { id } })
+                    .catch(err => {
+                        const response = getGeneralErrorMessage(err)
+                        return response
+                    })
+                })
+                .catch(err => {
+                    const response = getGeneralErrorMessage(err)
+                    return response
+                })
+            }else{
+                return getTimesheet(model)
+            }
+        })
+        Promise.all(timesheets).then(timesheets => {
+            const code = timesheets.length === 5 ? success : info
+            const title = getTimesheetsTitleMessage(timesheets.length)
+            const response = getResponse(code, title, timesheetsFound, timesheets)
+            res.json(response)
+        })
     })
     .catch(err => {
         const response = getGeneralErrorMessage(err)
-        res.json(response)
     })
 }
 
 exports.updateShiftStatus = (req, res) => {
-    const { params: { shift, status } } = req
+    const { params: { shift }, body: { status } } = req
     SingleTimesheet.update({ status }, { where: { id: shift } })
     .then(() => {
         const response = getResponse(success, 'Status Updated', shiftStatusChanged)
