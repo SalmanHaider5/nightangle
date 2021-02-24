@@ -2,10 +2,10 @@
 module.exports = {
 
     // hostUrl: 'https://intelligent-innovation.herokuapp.com/',
-    hostUrl: 'https://server.nmcregistered.org.uk/server/',
+    hostUrl: 'http://78.129.165.44:1000/server/',
     // hostUrl: 'http://localhost:1000/',
     // appUrl: 'http://localhost:8080/',
-    appUrl: 'https://nmcregistered.org.uk/',
+    appUrl: 'http://78.129.165.44:3000/',
     signupSecret: 'nightingale',
     tokenExpiration: 1200, // In Seconds
     // loginExpireation,

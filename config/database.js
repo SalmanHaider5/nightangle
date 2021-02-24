@@ -14,10 +14,20 @@
 //     DIALECT: 'mysql'
 // }
 
+// module.exports = {
+//     HOST: 'localhost',
+//     USER: 'root',
+//     PASSWORD: 'root',
+//     DB: 'nmcreg',
+//     DIALECT: 'mysql'
+// }
+
+//Live Server
+
 module.exports = {
     HOST: 'localhost',
     USER: 'root',
-    PASSWORD: 'root',
-    DB: 'nmcreg',
+    PASSWORD: 'nmcreg',
+    DB: 'NMC_REG',
     DIALECT: 'mysql'
 }

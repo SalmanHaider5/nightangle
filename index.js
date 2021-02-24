@@ -4,8 +4,8 @@ const cors                 = require('cors')
 const multer               = require('multer')
 const app                  = express()
 const models               = require('./models')
-// const PORT                 = process.env.PORT || 8080
-const PORT                 = process.env.PORT || 1000
+const PORT                 = process.env.PORT || 8080
+// const PORT                 = process.env.PORT || 1000
 
 app.use(json())
 app.use(cors())
