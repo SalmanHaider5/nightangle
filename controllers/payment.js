@@ -1,5 +1,4 @@
 const checkoutNodeJssdk = require('@paypal/checkout-server-sdk');
-const { User } = require('../models')
 const { getGeneralErrorMessage, getResponse, equals } = require('./helpers')
 
 
@@ -8,8 +7,7 @@ const {
         secretKey,
         currency,
         amount,
-        vatPercent,
-        paymentIntentId
+        vatPercent
     },
     responseMessages: {
         secretRetrieved,
@@ -18,8 +16,7 @@ const {
     },
     codes: {
         success,
-        error,
-        info
+        error
     }
 }  = require('../constants')
 const stripe  = require('stripe')(secretKey)
