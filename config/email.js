@@ -1,5 +1,5 @@
 const nodemailer     = require('nodemailer')
-const { nodemailer: { host, port, email, passowrd , secure} } = require('./keys').production
+const { nodemailer: { host, port, email, passowrd , secure} } = require('./keys')
 
 const sender = nodemailer.createTransport({
     host,

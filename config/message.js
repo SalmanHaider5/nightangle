@@ -1,8 +1,8 @@
-const { messages } = require('messagebird')('zjaxTCPiBJRkAWOCW3gs2jQVA')
+const { messagebird: { key } } = require('./keys')
+const { messages } = require('messagebird')(key)
 
 module.exports = (user, message) => {
 
-    console.log('Here')
     const params = {
         originator: 'NMC Reg',
         recipients: [

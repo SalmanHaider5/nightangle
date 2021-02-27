@@ -1,15 +1,10 @@
+const { stripe: { key }, config: { app, server, secret } } = require('../config/keys')
 
 module.exports = {
-
-    // hostUrl: 'https://intelligent-innovation.herokuapp.com/',
-    hostUrl: 'https://nmcregistered.org.uk:1000/server/',
-    // hostUrl: 'http://localhost:1000/',
-    // hostUrl: 'http://localhost:8080/',
-    // appUrl: 'http://localhost:8080/',
-    appUrl: 'https://nmcregistered.org.uk/',
-    signupSecret: 'nightingale',
+    hostUrl: server,
+    appUrl: app,
+    signupSecret: secret,
     tokenExpiration: 1200, // In Seconds
-    // loginExpireation,
     linkExpiration: 20, // In minutes
     codeExpiration: 10, // In minutes
 
@@ -63,9 +58,6 @@ module.exports = {
     },
 
     emailCredentials: {
-        service: 'smtp.gmail.com',
-        email: 'malachy2@gmail.com',
-        password: '75122817',
         emailVerificationSubject: 'Account Verification',
         emailVerificationMessage: '<p>To verify your account please click on',
         resetPasswordSubject: 'Reset your Password',
@@ -92,15 +84,10 @@ module.exports = {
     },
 
     stripeCredentials: {
-        secretKey: 'sk_test_1CKG3l4djbNIKfpHOD3Yrs3o00s2auBOs1',
+        secretKey: key,
         amount: '495',
         vatPercent: '20',
         currency: 'gbp',
-        paymentIntentId: 'pi_1Gb3gdHrrJ26Tytgj2IdeMq4'
     },
-    braintreeCredentials: {
-        merchantId: 'wm733scpkh998vsc',
-        publicKey: 'jj7zg2csp5ppmj25',
-        privateKey: '3918d7f4464c74cbcaab666ea568c402'
-    }
+    
 }
