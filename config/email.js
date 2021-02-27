@@ -1,20 +1,13 @@
 const nodemailer     = require('nodemailer')
-
-const {
-    emailCredentials:{
-        service,
-        email,
-        password
-    }
-} = require('../constants')
+const { nodemailer: { host, port, email, passowrd , secure} } = require('./keys').production
 
 const sender = nodemailer.createTransport({
-    host: 'nmcregistered.org.uk',
-    port: 465,
-    secure: true,
+    host,
+    port,
+    secure,
     auth: {
-        user: 'account@nmcregistered.org.uk',
-        pass: 'Care@1234'
+        user: email,
+        pass: passowrd
     }
 })
 
@@ -26,7 +19,11 @@ module.exports = ({ to, subject, content }) => {
         html: content
     }
     sender.sendMail(options, (err, info) => {
-        if(err) return err
-        else return info
+        if(err) {
+            console.log('Error', err)
+        }
+        else {
+            console.log('Info', info)
+        }
     })
 }

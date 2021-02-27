@@ -17,8 +17,8 @@
 // module.exports = {
 //     HOST: 'localhost',
 //     USER: 'root',
-//     PASSWORD: 'root',
-//     DB: 'nmcreg',
+//     PASSWORD: 'admin',
+//     DB: 'nmc_reg',
 //     DIALECT: 'mysql'
 // }
 
@@ -27,7 +27,7 @@
 module.exports = {
     HOST: 'localhost',
     USER: 'root',
-    PASSWORD: 'nmcreg',
-    DB: 'NMC_REG',
+    PASSWORD: 'Care@1234',
+    DB: 'nmc_reg',
     DIALECT: 'mysql'
 }

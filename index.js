@@ -4,13 +4,14 @@ const cors                 = require('cors')
 const multer               = require('multer')
 const app                  = express()
 const models               = require('./models')
-const PORT                 = process.env.PORT || 8080
-// const PORT                 = process.env.PORT || 1000
+// const PORT                 = process.env.PORT || 8080
+const PORT                 = process.env.PORT || 1000
 
 app.use(json())
 app.use(cors())
 app.use(urlencoded({ extended: true }))
 app.use('/uploads', express.static('public'))
+app.use(express.static(path.join(__dirname, 'build')));
 
 const publicUpload = multer.diskStorage({
     destination: (req, file, cb) => {
