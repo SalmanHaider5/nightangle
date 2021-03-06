@@ -50,7 +50,7 @@ exports.isPasswordValid = (reqPassword, password) => {
 }
 
 exports.getEmailContent = (id, email, token, role, type='signup') => {
-    const verificationUrl = type === 'signup' ? `${appUrl}${id}/verify/${token}` : `${appUrl}${id}/resetPassword/${token}`
+    const verificationUrl = type === 'signup' ? `${appUrl}/${id}/verify/${token}` : `${appUrl}${id}/resetPassword/${token}`
     return {
         to: email,
         subject: type === 'signup' ? emailVerificationSubject : resetPasswordSubject,
@@ -61,7 +61,7 @@ exports.getEmailContent = (id, email, token, role, type='signup') => {
 exports.getPasswordSuccessEmailContent = email => {
     return {
         to: email,
-        subject: 'Password Successfully Reset [NMC Registered]',
+        subject: 'Password Successfully Reset [NMC Professionals]',
         content: getPasswordChangeSuccessContent()
     }
 }
@@ -81,7 +81,7 @@ exports.setNewOffer = (professional, offer) => {
 }
 
 exports.getNewOfferMessage = (id, address) => {
-    return `Hello, you have a new shift offer from NMC Registered at ${address}. Please click this link to view offer: ${appUrl}professional/${id}/requests`
+    return `Hello, you have a new shift offer from NMC Professionals at ${address}. Please click this link to view offer: ${appUrl}professional/${id}/requests`
 }
 
 exports.getBasicProfessionalData = (id, email, role, twoFactorAuth = false) => {
@@ -216,10 +216,10 @@ exports.getProfessionalOffersQuery = id => {
 }
 
 exports.getOfferStatusMessage = (status, professionalId = '') => {
-    const accepted = `Hello, the NMC Registered professional has accepted your shift offer, please confirm your acceptance via the “Approval” button on your NMC Registered account.`
-    const declined = `Hello, the requested NMC Registered professional has requested to be excused on this occasion and sends their apologies, sorry.`
+    const accepted = `Hello, the NMC professional has accepted your shift offer, please confirm your acceptance via the “Approval” button on your NMC Professionals account.`
+    const declined = `Hello, the requested NMC professional has requested to be excused on this occasion and sends their apologies, sorry.`
     const approved = `Your shift is confirmed by NMC Company, hope you have a good shift. Details are here: ${appUrl}professional/${professionalId}/requests`
-    const rejected = `Oops! Offered shift by NMC Registered has now been filled by someone else. Offers normally work on a first come first serve basis, sorry this time next time will be better.`
+    const rejected = `Oops! Offered shift by NMC Professionals has now been filled by someone else. Offers normally work on a first come first serve basis, sorry this time next time will be better.`
     if(status === 'accepted') return accepted
     else if(status === 'declined') return declined
     else if(status === 'approved') return approved
@@ -229,25 +229,25 @@ exports.getOfferStatusMessage = (status, professionalId = '') => {
 const getSignupMailContent = (url, role) => {
     const companyContent = `<div style="background: #f6f5ff; margin: 10 auto; border: 1px dashed #9795ff; width: 90%;">
     <h2 style="color: #0b1586; margin-left: 30px;">
-      Welcome to NMC Registered
+      Welcome to NMC Professionals
     </h2>
     <div style="width: 95%; margin: 0 auto;">
       <p>
         If you’re running a Care home, Nursing home or you’re a Director of Nursing for a NHS Trust then…
       </p>
       <p>
-        Welcome to NMC Registered the intelligent innovative way to source NMC Professionals. An licence purchase covers your shift needs for the whole year without the need to pay any agency fees.
+        Welcome to NMC Professionals the intelligent innovative way to source NMC Professionals. An licence purchase covers your shift needs for the whole year without the need to pay any agency fees.
       </p>
     </div>
     <h4 style="color: #0b1586; margin-left: 30px;">
-      Top 7 Reasons To Use NMC Registered?
+      Top 7 Reasons To Use NMC Professionals?
     </h4>
     <div style="width: 95%; margin: 0 auto;">
       <ul>
         <li>Seamless end to end automated NMC professional sourcing system.</li>
         <li>10.4 shifts cover all your costs for use of licence, then it's free for the rest of the year if you’re paying £3.97 per hour or above to nursing agencies for 12 hour shifts. </li>
         <li>Between 2 to 10-minute completion ratio from sourcing the professional to receiving acceptance of the shift.</li>
-        <li>No restrictions on employing professionals full-time or part-time sourced through NMC Registered, unlike many nursing agencies.</li>
+        <li>No restrictions on employing professionals full-time or part-time sourced through NMC Professionals, unlike many nursing agencies.</li>
         <li>Total security with NMC professional and DBS certificate verification links.</li>
         <li>No budget concerns, fixed fee licensing.</li>
         <li>Use of current pay-cycle mode, no need to adjust pay-cycle run.</li>
@@ -263,14 +263,14 @@ const getSignupMailContent = (url, role) => {
 
   const professionalContent = `<div style="background: #f6f5ff; margin: 10 auto; border: 1px dashed #9795ff; width: 90%;">
         <h2 style="color: #0b1586; margin-left: 30px;">
-            Welcome to NMC Registered
+            Welcome to NMC Professionals
         </h2>
         <div style="width: 95%; margin: 0 auto;">
             <p>
             As a registered NMC professional or a nursing associate you have huge responsibilities for the care and 
             well-being of your patients. Your efforts are paramount in all arenas of the NHS and the private care 
             sector and as such, deserve recognition. Realising this should mean that the reward for your dedication 
-            and hard work should be reflected both financially and with the respect it warrants. NMC Registered will 
+            and hard work should be reflected both financially and with the respect it warrants. NMC Professionals will 
             ensure both these objectives.
             </p>
             <p>
@@ -303,7 +303,7 @@ const getPasswordResetContent = url => {
         <div style="width: 95%; margin: 0 auto;">
         
         <p>
-            Welcome to NMC Registered the intelligent innovative way to source NMC Professionals. An licence purchase covers your shift needs for the whole year without the need to pay any agency fees.
+            Welcome to NMC Professionals the intelligent innovative way to source NMC Professionals. An licence purchase covers your shift needs for the whole year without the need to pay any agency fees.
         </p>
         </div>
         <p style="margin-left: 30px;">
@@ -332,7 +332,7 @@ const getPasswordChangeSuccessContent = () => {
 const getContactMessagesContent = (name, phone, email, message) => {
     return `<div style="background: #f6f5ff; margin: 10 auto; border: 1px dashed #9795ff; width: 70%;">
         <h2 style="color: #0b1586; margin-left: 30px;">
-        NMC Registered Message
+        NMC Professionals Message
         </h2>
         <div style="width: 95%; margin: 0 auto;">
         <h4>

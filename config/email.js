@@ -13,7 +13,7 @@ const sender = nodemailer.createTransport({
 
 module.exports = ({ to, subject, content }) => {
     const options = {
-        from: '"NMC Account" <account@nmcregistered.org.uk>',
+        from: '"NMC Account" <account@nmcprofessionals.org.uk>',
         to,
         subject,
         html: content

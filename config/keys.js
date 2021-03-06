@@ -1,7 +1,7 @@
 module.exports = {
     nodemailer: {
         host: '', // for gmail: smtp.gmail.com
-        port: 000, // 587
+        port: 465, // 587
         email: '',
         passowrd: '',
         secure: true // for local: false
@@ -13,8 +13,8 @@ module.exports = {
         key: ''
     },
     config: {
-        server: '',
-        app: '',
+        server: 'https://nmcprofessionals.org.uk/server/',
+        app: 'https://nmcprofessionals.org.uk',
         secret: ''
     }
 }

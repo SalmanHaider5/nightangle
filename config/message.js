@@ -4,7 +4,7 @@ const { messages } = require('messagebird')(key)
 module.exports = (user, message) => {
 
     const params = {
-        originator: 'NMC Reg',
+        originator: 'NMC Pro',
         recipients: [
             user
         ],

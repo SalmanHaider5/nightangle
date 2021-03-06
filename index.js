@@ -2,10 +2,11 @@ const express              = require('express')
 const { json, urlencoded } = require('body-parser')
 const cors                 = require('cors')
 const multer               = require('multer')
+const path                 = require('path')
 const app                  = express()
 const models               = require('./models')
-// const PORT                 = process.env.PORT || 8080
-const PORT                 = process.env.PORT || 1000
+const PORT                 = process.env.PORT || 8080
+// const PORT                 = process.env.PORT || 1000
 
 app.use(json())
 app.use(cors())
@@ -71,6 +72,10 @@ app.post('/server/:userId/professional/bank/details', verifyToken, addBankDetail
 app.put('/server/:userId/professional/bank/details', verifyToken, updatedBankDetails)
 app.post('/server/:userId/offer', verifyToken, verifyUser, verifyCompany, verifyPayment, createOffer)
 app.put('/server/:userId/offer/:offerId', verifyToken, verifyUser, updateOffer)
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '/build/index.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)
