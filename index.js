@@ -5,8 +5,7 @@ const multer               = require('multer')
 const path                 = require('path')
 const app                  = express()
 const models               = require('./models')
-const PORT                 = process.env.PORT || 8080
-// const PORT                 = process.env.PORT || 1000
+const { port }             = require('./config/keys')
 
 app.use(json())
 app.use(cors())
@@ -77,6 +76,6 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '/build/index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`)
+app.listen(port, () => {
+    console.log(`Server is listening on port ${port}`)
 })

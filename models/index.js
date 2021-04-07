@@ -1,5 +1,10 @@
-const { Sequelize, DataTypes }                = require('sequelize')
-const { HOST, USER, PASSWORD, DB, DIALECT }   = require('../config/database')
+const { Sequelize, DataTypes } = require('sequelize')
+
+const {
+    database: {
+        HOST, USER, PASSWORD, DB, DIALECT
+    }
+}   = require('../config/keys')
 
 const sequelize = new Sequelize(DB, USER, PASSWORD, {
     host: HOST,

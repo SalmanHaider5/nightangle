@@ -1,20 +1,31 @@
+const app = require('dotenv')
+app.config()
+
 module.exports = {
+    port: process.env.PORT,
     nodemailer: {
-        host: '', // for gmail: smtp.gmail.com
-        port: 465, // 587
-        email: '',
-        passowrd: '',
-        secure: true // for local: false
+        host: process.env.HOST,
+        port: process.env.EMAIL_PORT,
+        email: process.env.EMAIL,
+        passowrd: process.env.PASSWORD,
+        secure: process.env.SECURE
     },
     messagebird: {
-        key: ''
+        key: process.env.MESSAGEBIRD_KEY
     },
     stripe: {
-        key: ''
+        key: process.env.STRIPE_KEY
     },
     config: {
-        server: 'https://nmcprofessionals.org.uk/server/',
-        app: 'https://nmcprofessionals.org.uk',
-        secret: ''
+        server: process.env.SERVER_URL,
+        app: process.env.APP_URL,
+        secret: process.env.SECRET
+    },
+    database: {
+        HOST: process.env.DB_HOST,
+        USER: process.env.USER,
+        PASSWORD: process.env.DB_PASSWORD,
+        DB: process.env.DB,
+        DIALECT: process.env.DIALECT
     }
 }

@@ -50,6 +50,7 @@ const {
         invalidCurrentPassword,
         timesheetAdded,
         timesheetsFound,
+        invalidPassword,
         shiftStatusChanged,
         shiftChanged,
         timesheetDeleted,
@@ -91,10 +92,25 @@ exports.verifyProfessional = (req, res, next) => {
 
 exports.updateProfessional = (req, res) => {
     const { params: { userId }, body, files } = req
-    Professional.update(setProfessionalBody(userId, files, body), { where: { userId } })
-    .then(() => {
-        const response = getResponse(success, 'Profile Updated', profileUpdated)
-        res.json(response)
+    
+    User.findOne({ where: { id: userId } })
+    .then(user => {
+        const { dataValues } = user
+        if(isPasswordValid(body.password, dataValues.password)){
+            const { password, ...data } = body
+            Professional.update(setProfessionalBody(userId, files, data), { where: { userId } })
+            .then(() => {
+                const response = getResponse(success, 'Profile Updated', profileUpdated)
+                res.json(response)
+            })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
+        }else{
+            const response = getResponse(error, 'Invalid Password', invalidPassword)
+            res.json(response)
+        }
     })
     .catch(err => {
         const response = getGeneralErrorMessage(err)
@@ -459,20 +475,35 @@ exports.addBankDetails = (req, res) => {
 
 exports.updatedBankDetails = (req, res) => {
     const { params: { userId }, body } = req
-    BankDetails.findOne({ where: { userId } })
-    .then(model => {
-        if(model){
-            BankDetails.update(body, { where: { userId } })
-            .then(() => {
-                const response = getResponse(success, 'Bank Details Modified', profileUpdated)
-                res.json(response)
+
+    User.findOne({ where: { id: userId } })
+    .then(user => {
+        const { dataValues } = user
+        if(isPasswordValid(body.password, dataValues.password)){
+            const { password, ...data } = body
+            BankDetails.findOne({ where: { userId } })
+            .then(model => {
+                if(model){
+                    BankDetails.update(data, { where: { userId } })
+                    .then(() => {
+                        const response = getResponse(success, 'Bank Details Modified', profileUpdated)
+                        res.json(response)
+                    })
+                    .catch(err => {
+                        const response = getGeneralErrorMessage(err)
+                        res.json(response)
+                    })
+                }else{
+                    const response = getResponse(error, 'Invalid Request', generalErrorMessage)
+                    res.json(response)
+                }
             })
             .catch(err => {
                 const response = getGeneralErrorMessage(err)
                 res.json(response)
             })
         }else{
-            const response = getResponse(error, 'Invalid Request', generalErrorMessage)
+            const response = getResponse(error, 'Invalid Password', invalidPassword)
             res.json(response)
         }
     })

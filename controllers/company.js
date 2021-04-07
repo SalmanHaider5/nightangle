@@ -34,7 +34,8 @@ const {
         passwordChanged,
         invalidCurrentPassword,
         profileUpdated,
-        paymentReceived
+        paymentReceived,
+        invalidPassword
     }
 } = require('../constants')
 
@@ -139,10 +140,25 @@ exports.verifyCompany = (req, res, next) => {
 
 exports.updateCompany = (req, res) => {
     const { params: { userId }, body } = req
-    Company.update(body, { where: { userId } })
-    .then(() => {
-        const response = getResponse(success, 'Profile Updated', profileUpdated)
-        res.json(response)
+
+    User.findOne({ where: { id: userId } })
+    .then(user => {
+        const { dataValues } = user
+        if(isPasswordValid(body.password, dataValues.password)){
+            const { password, ...data } = body
+            Company.update(data, { where: { userId } })
+            .then(() => {
+                const response = getResponse(success, 'Profile Updated', profileUpdated)
+                res.json(response)
+            })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
+        }else{
+            const response = getResponse(error, 'Invalid Password', invalidPassword)
+            res.json(response)
+        }
     })
     .catch(err => {
         const response = getGeneralErrorMessage(err)
