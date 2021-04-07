@@ -167,6 +167,7 @@ exports.getCompanyInitialValues = email => {
         isPaid: false,
         balance: amount,
         vat: vatPercent,
+        location: false
     }
 }
 

@@ -7,7 +7,8 @@ const {
     Token,
     Professional,
     Phone,
-    Payment
+    Payment,
+    Location
 } = require('../models')
 
 const {
@@ -44,7 +45,8 @@ const {
         passwordChangeSuccess,
         falseCode,
         accessDenied,
-        phoneVerification
+        phoneVerification,
+        unauthLocation
     },
     codes: {
         error,
@@ -205,13 +207,36 @@ exports.getUserByEmail = (req, res, next) => {
 
 
 exports.login = (req, res) => {
-    const { body: { email, password: reqPassword }, user } = req
+    const { body: { email, password: reqPassword, position }, user } = req
     const { dataValues: { id, password, role } } = user
     if(isPasswordValid(reqPassword, password)){
         if(role === 'company'){
-            const data = getBasicCompanyData(id, email, role)
-            const response = getResponse(success, 'Login Success', loginSuccess, data)
-            res.json(response)
+            const { longitude, latitude } = position
+            Location.findOne({ where: { userId: id } })
+            .then(location => {
+                if(location){
+                    const { dataValues } = location
+                    if(dataValues.longitude === longitude && dataValues.latitude === latitude){
+                        const data = getBasicCompanyData(id, email, role)
+                        const response = getResponse(success, 'Login Success', loginSuccess, data)
+                        res.json(response)
+                    }else{
+                        const response = getResponse(error, 'Location Unauthorized', unauthLocation)
+                        res.json(response)
+                    }
+                    const data = getBasicCompanyData(id, email, role)
+                    const response = getResponse(success, 'Login Success', loginSuccess, data)
+                    res.json(response)
+                }else{
+                    const data = getBasicCompanyData(id, email, role)
+                    const response = getResponse(success, 'Login Success', loginSuccess, data)
+                    res.json(response)
+                }
+            })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
         }else if(role === 'professional'){
             Professional.findOne({ where: { userId: id } })
             .then(professional => {

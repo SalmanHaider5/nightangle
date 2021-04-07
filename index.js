@@ -30,9 +30,9 @@ var fileUpload = upload.fields([
 
 const { signup, verify, login, verifyToken, sendPasswordResetLink, resetPassword, verifyLogin, verifyUser, verifyPayment, getUserByEmail }                      = require('./controllers/account')
 const { create, addPhone, verifyPhone, getProfessionalDetails, updateProfessional, deleteTimesheet, updateProfessionalSecurityDetails, updateTimesheetShift, addTimesheet, getTimesheets, getSingletimesheet, updateShiftStatus, addBankDetails, updatedBankDetails, verifyProfessional }   = require('./controllers/professional')
-const { add, getCompanyDetails, changePassword, updateCompany, searchProfessionals, searchTimesheets, filterProfessionalsByShift, makePayment, verifyCompany }           = require('./controllers/company')
+const { add, getCompanyDetails, changePassword, updateCompany, searchProfessionals, searchTimesheets, filterProfessionalsByShift, makePayment, verifyCompany, addLocation }           = require('./controllers/company')
 const { sendMessage } = require('./controllers/contact')
-const { createStripeSecret, getPaypalClientToken, verifyStripePayment, capturePaypalTransaction } = require('./controllers/payment')
+const { createStripeSecret, verifyStripePayment, capturePaypalTransaction } = require('./controllers/payment')
 const { createOffer, updateOffer } = require('./controllers/offers')
 
 models.sequelize.sync();
@@ -70,6 +70,7 @@ app.get('/server/:userId/company/client/secret/stripe', verifyToken, verifyUser,
 app.post('/server/:userId/professional/bank/details', verifyToken, addBankDetails)
 app.put('/server/:userId/professional/bank/details', verifyToken, updatedBankDetails)
 app.post('/server/:userId/offer', verifyToken, verifyUser, verifyCompany, verifyPayment, createOffer)
+app.post('/server/:userId/location', verifyToken, verifyUser, verifyCompany, addLocation)
 app.put('/server/:userId/offer/:offerId', verifyToken, verifyUser, updateOffer)
 
 app.get('*', (req, res) => {

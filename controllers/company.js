@@ -6,7 +6,8 @@ const {
     Timesheet,
     SingleTimesheet,
     Payment,
-    sequelize
+    sequelize,
+    Location
 } = require('../models')
 
 const {
@@ -35,7 +36,9 @@ const {
         invalidCurrentPassword,
         profileUpdated,
         paymentReceived,
-        invalidPassword
+        invalidPassword,
+        locationAdded,
+        locationAlreadyAdded
     }
 } = require('../constants')
 
@@ -50,13 +53,11 @@ exports.add = (req, res) => {
             res.json(response)
         })
         .catch(err => {
-            console.log('Err2', err)
             const response = getGeneralErrorMessage(err)
             res.json(response)
         })
     })
     .catch(err => {
-        console.log('Err1', err)
         const response = getGeneralErrorMessage(err)
         res.json(response)
     })
@@ -91,10 +92,26 @@ exports.getCompanyDetails = (req, res) => {
                 Payment.findOne({ where: { userId } })
                 .then(payment => {
                     if(payment){
-                        const data = setCompanyValues(dataValues, email, offers, payment.dataValues)
-                        const response = getResponse(success, 'Profile Retrieved', recordFound, data)
-                        res.json(response)
+                        Location.findOne({ where: { userId } })
+                        .then(location => {
+                            if(location){
+                                dataValues.location = true
+                                const data = setCompanyValues(dataValues, email, offers, payment.dataValues)
+                                const response = getResponse(success, 'Profile Retrieved', recordFound, data)
+                                res.json(response)
+                            }else{
+                                dataValues.location = false
+                                const data = setCompanyValues(dataValues, email, offers, payment.dataValues)
+                                const response = getResponse(success, 'Profile Retrieved', recordFound, data)
+                                res.json(response)
+                            }
+                        })
+                        .catch(err => {
+                            const response = getGeneralErrorMessage(err)
+                            res.json(response)
+                        })
                     }else{
+                        dataValues.location = false
                         const data = setCompanyValues(dataValues, email, offers)
                         const response = getResponse(success, 'Profile Retrieved', recordFound, data)
                         res.json(response)
@@ -136,6 +153,34 @@ exports.verifyCompany = (req, res, next) => {
         const response = getGeneralErrorMessage(err)
         res.json(response)
     })
+}
+
+exports.addLocation = (req, res) => {
+    const { body, params: { userId } } = req
+    body.userId = userId
+
+    Location.findOne({ where: { userId } })
+    .then(location => {
+        if(location){
+            const response = getResponse(error, 'Invalid Request', locationAlreadyAdded)
+            res.json(response)
+        }else{
+            Location.create(body)
+            .then(() => {
+                const response = getResponse(info, 'Location Added', locationAdded)
+                res.json(response)
+            })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
+        }
+    })
+    .catch(err => {
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
+    })
+
 }
 
 exports.updateCompany = (req, res) => {

@@ -24,5 +24,6 @@ models.SingleTimesheet = require('./singleTimesheet')(sequelize, DataTypes)
 models.Payment         = require('./payment')(sequelize, DataTypes)
 models.BankDetails     = require('./bankDetails')(sequelize, DataTypes)
 models.Offer           = require('./offers')(sequelize, DataTypes)
+models.Location        = require('./location')(sequelize, DataTypes)
 
 module.exports = models

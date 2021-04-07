@@ -54,7 +54,10 @@ module.exports = {
         offerDeclined: 'You have successfully declined this offer',
         offerApproved: 'You have successfully approved this offer',
         offerRejected: 'You have successfully rejected this offer',
-        paymentUnsuccessful: 'Your payment is not verifed, please contact our Support if you have any issue.'
+        paymentUnsuccessful: 'Your payment is not verifed, please contact our Support if you have any issue.',
+        locationAdded: 'Your location has been added successfully, you can login anytime using current location',
+        locationAlreadyAdded: 'Your location is already added, you cannot change without proir permission',
+        unauthLocation: 'Your location is not registered with this account, please try to login from registered location'
     },
 
     emailCredentials: {
@@ -80,7 +83,8 @@ module.exports = {
         singleTimesheet: 'singleTimesheet',
         payment: 'payment',
         offer: 'offer',
-        bankDetails: 'bankDetail'
+        bankDetails: 'bankDetail',
+        location: 'location'
     },
 
     stripeCredentials: {
