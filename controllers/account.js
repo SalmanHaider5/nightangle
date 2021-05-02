@@ -23,6 +23,7 @@ const {
     getRandomCode,
     getBasicCompanyData,
     getHashedPassword,
+    verifyLocation,
     getPasswordSuccessEmailContent
 } = require('./helpers')
 
@@ -46,7 +47,8 @@ const {
         falseCode,
         accessDenied,
         phoneVerification,
-        unauthLocation
+        unauthLocation,
+        emailUpdated
     },
     codes: {
         error,
@@ -216,7 +218,9 @@ exports.login = (req, res) => {
             .then(location => {
                 if(location){
                     const { dataValues } = location
-                    if(dataValues.longitude === longitude && dataValues.latitude === latitude){
+
+                    const locationAuthenticated = verifyLocation(longitude, latitude, dataValues)
+                    if(locationAuthenticated){
                         const data = getBasicCompanyData(id, email, role)
                         const response = getResponse(success, 'Login Success', loginSuccess, data)
                         res.json(response)
@@ -224,9 +228,6 @@ exports.login = (req, res) => {
                         const response = getResponse(error, 'Location Unauthorized', unauthLocation)
                         res.json(response)
                     }
-                    const data = getBasicCompanyData(id, email, role)
-                    const response = getResponse(success, 'Login Success', loginSuccess, data)
-                    res.json(response)
                 }else{
                     const data = getBasicCompanyData(id, email, role)
                     const response = getResponse(success, 'Login Success', loginSuccess, data)
@@ -332,6 +333,32 @@ exports.verifyToken = (req, res, next) => {
         const response = getResponse(error, 'Unauthorized Request', tokenInvalid)
         res.json(response)
     }
+}
+
+exports.updateEmail = (req, res, next) => {
+    const { params: { userId }, body: { email } } = req
+    User.findOne({ where: { id: userId } })
+    .then(user => {
+        if(user){
+            User.update({ email }, { where: { id: userId } })
+            .then(() => {
+                const response = getResponse(success, 'Email Updated', emailUpdated)
+                res.json(response)
+            })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
+        }else{
+            const response = getGeneralErrorMessage({})
+            res.json(response)
+        }
+    })
+    .catch(err => {
+        console.log()
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
+    })
 }
 
 exports.sendPasswordResetLink = (req, res) => {

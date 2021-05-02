@@ -57,7 +57,9 @@ module.exports = {
         paymentUnsuccessful: 'Your payment is not verifed, please contact our Support if you have any issue.',
         locationAdded: 'Your location has been added successfully, you can login anytime using current location',
         locationAlreadyAdded: 'Your location is already added, you cannot change without proir permission',
-        unauthLocation: 'Your location is not registered with this account, please try to login from registered location'
+        unauthLocation: 'Your location is not registered with this account, please try to login from registered location',
+        emailUpdated: 'Your email Id has been successfully modified',
+        phoneUpdated: 'Your phone has been successfully modified'
     },
 
     emailCredentials: {

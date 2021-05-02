@@ -53,6 +53,7 @@ const {
         invalidPassword,
         shiftStatusChanged,
         shiftChanged,
+        phoneUpdated,
         timesheetDeleted,
         bankDetailsRequired,
         bankDetailsAdded,
@@ -109,6 +110,31 @@ exports.updateProfessional = (req, res) => {
             })
         }else{
             const response = getResponse(error, 'Invalid Password', invalidPassword)
+            res.json(response)
+        }
+    })
+    .catch(err => {
+        const response = getGeneralErrorMessage(err)
+        res.json(response)
+    })
+}
+
+exports.updatePhone = (req, res, next) => {
+    const { params: { userId }, body: { phone } } = req
+    Phone.findOne({ where: { userId } })
+    .then(user => {
+        if(user){
+            Phone.update({ phone }, { where: { userId } })
+            .then(() => {
+                const response = getResponse(success, 'Phone Updated', phoneUpdated)
+                res.json(response)
+            })
+            .catch(err => {
+                const response = getGeneralErrorMessage(err)
+                res.json(response)
+            })
+        }else{
+            const response = getGeneralErrorMessage({})
             res.json(response)
         }
     })

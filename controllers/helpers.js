@@ -171,6 +171,19 @@ exports.getCompanyInitialValues = email => {
     }
 }
 
+exports.verifyLocation = (longitude, latitude, dataValues) => {
+
+    const minLongitude = parseFloat(dataValues.longitude) - 0.500
+    const maxLongitude = parseFloat(dataValues.longitude) + 0.500
+    const minLatitude = parseFloat(dataValues.latitude) - 0.500
+    const maxLatitude = parseFloat(dataValues.latitude) + 0.500
+
+    if((longitude < maxLongitude && longitude > minLongitude) && (latitude < maxLatitude && latitude > minLatitude))
+        return true
+    else
+        return false
+}
+
 exports.setProfessionalInitialValues = (user, phoneInfo, bankDetails = {}, professional = {}, offers = []) => {
     console.log('Data', offers)
     const { phone = '', status = false } = phoneInfo
