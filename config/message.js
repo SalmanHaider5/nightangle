@@ -1,4 +1,4 @@
-const { messages } = require('messagebird')('qaCjGY5LkROPm12hHPJsHhzGw')
+const { messages } = require('messagebird')('<key>')
 
 module.exports = (user, message) => {
     const params = {

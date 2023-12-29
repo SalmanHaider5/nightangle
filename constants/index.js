@@ -47,7 +47,7 @@ module.exports = {
     emailCredentials: {
         service: 'smtp.gmail.com',
         email: 'malachy2@gmail.com',
-        password: '75122817',
+        password: '',
         emailVerificationSubject: 'Verify your Account',
         emailVerificationMessage: '<p>To verify your account please click on',
         resetPasswordSubject: 'Reset your Password',
@@ -71,8 +71,8 @@ module.exports = {
     },
 
     braintreeCredentials: {
-        merchantId: 'wm733scpkh998vsc',
-        publicKey: 'jj7zg2csp5ppmj25',
-        privateKey: '3918d7f4464c74cbcaab666ea568c402'
+        merchantId: '',
+        publicKey: '',
+        privateKey: ''
     }
 }
