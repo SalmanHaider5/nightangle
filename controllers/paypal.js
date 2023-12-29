@@ -1,14 +1,20 @@
 'use strict';
 
-const checkoutNodeJssdk = require('@paypal/checkout-server-sdk')
+const checkoutNodeJssdk = require('@paypal/checkout-server-sdk');
+const { 
+    paypal: {
+        clientID,
+        clientSecret
+    }
+} = require('../config/keys');
 
 function client() {
     return new checkoutNodeJssdk.core.PayPalHttpClient(environment());
 }
 
 function environment() {
-    const clientId = 'ATET_OBKQsm2EXXHAEenw8kALfnbgERBkb9U_I2ZVVvATJXtRsrY9easUR2UU_U1I9UYp0ZMYoMo8S6O'
-    const clientSecret = 'EEBvAV5P4iXFDEIQjHvdedpzk4oiH2ZsO2fgeMTzl2uA2JoevHjBxW1BKvMcB0TTS5LMonOX7uuykQhE'
+    const clientId = clientID
+    const clientSecret = clientSecret
 
     return new checkoutNodeJssdk.core.SandboxEnvironment(
         clientId, clientSecret
