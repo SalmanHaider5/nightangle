@@ -1,4 +1,4 @@
-# NightAngle
+# NMC Registered
 UK based application for Nursing Homes and Medical Professionals
 
 ## Getting Started
