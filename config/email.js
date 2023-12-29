@@ -14,7 +14,7 @@ const sender = nodemailer.createTransport({
     secure: true,
     auth: {
         user: 'account@nmcregistered.org.uk',
-        pass: 'Care@1234'
+        pass: ''
     }
 })
 
